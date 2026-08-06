@@ -243,9 +243,11 @@
                             <table id="tbl-shipped">
                                 <thead>
                                     <tr>
-                                        <th>Identifier <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 0, this)"><i class="bi bi-files"></i> Copy All</button></th>
+                                        <th>PO # <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 0, this)"><i class="bi bi-files"></i> Copy</button></th>
+                                        <th>Cust Order # <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 1, this)"><i class="bi bi-files"></i> Copy</button></th>
+                                        <th>Ship From</th>
+                                        <th>Created Date</th>
                                         <th>Status</th>
-                                        <th>Trace ID <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 2, this)"><i class="bi bi-files"></i> Copy All</button></th>
                                     </tr>
                                 </thead>
                                 <tbody id="bd-shipped"></tbody>
@@ -470,7 +472,12 @@
             const t0 = performance.now();
 
             try {
-                const res = await fetch('/api/extract', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({orders: raw}) });
+                // Post the raw text to the backend API we mapped in app.py
+                const res = await fetch('/api/extract', { 
+                    method: 'POST', 
+                    headers: {'Content-Type':'application/json'}, 
+                    body: JSON.stringify({orders: raw}) 
+                });
                 
                 if(res.status === 401) { window.location.href='/'; return; }
                 
@@ -497,7 +504,17 @@
                 const lat = ((t1-t0)/1000).toFixed(2);
 
                 document.getElementById('countShipped').innerText = data.shipped.length;
-                document.getElementById('bd-shipped').innerHTML = data.shipped.map(r => `<tr><td data-raw="${r.order}" class="mono">${r.order} <i class="bi bi-clipboard copy-act" onclick="copySingle('${r.order}', this)"></i></td><td><span class="status-badge st-ok">${r.status}</span></td><td data-raw="${r.tracking}" class="mono" style="color:var(--text-dim);">${r.tracking} <i class="bi bi-clipboard copy-act" onclick="copySingle('${r.tracking}', this)"></i></td></tr>`).join('');
+                
+                // MAP THE NEW FIELDS TO THE TABLE ROWS HERE
+                document.getElementById('bd-shipped').innerHTML = data.shipped.map(r => `
+                    <tr>
+                        <td data-raw="${r.order}" class="mono">${r.order} <i class="bi bi-clipboard copy-act" onclick="copySingle('${r.order}', this)"></i></td>
+                        <td data-raw="${r.customer_order}" class="mono">${r.customer_order} <i class="bi bi-clipboard copy-act" onclick="copySingle('${r.customer_order}', this)"></i></td>
+                        <td class="mono">${r.ship_from}</td>
+                        <td class="mono" style="color:var(--text-dim);">${r.created_date}</td>
+                        <td><span class="status-badge st-ok">${r.status}</span></td>
+                    </tr>
+                `).join('');
 
                 document.getElementById('countNoTrk').innerText = data.no_tracking.length;
                 document.getElementById('bd-notracking').innerHTML = data.no_tracking.map(r => `<tr><td data-raw="${r.order}" class="mono">${r.order} <i class="bi bi-clipboard copy-act" onclick="copySingle('${r.order}', this)"></i></td><td><span class="status-badge st-warn">${r.status}</span></td><td style="color:var(--text-dim);">${r.reason}</td></tr>`).join('');
