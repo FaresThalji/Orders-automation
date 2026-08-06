@@ -102,6 +102,15 @@
         .btn-run:hover::before { transform: translateX(100%); }
         .btn-run:active { transform: translateY(1px) scale(0.97); }
 
+        .btn-upload {
+            background: var(--surface-solid); border: 1px solid var(--border); border-radius: 12px;
+            padding: 0 24px; height: 50px; color: var(--text-main); font-size: 14px; font-weight: 600;
+            display: flex; align-items: center; gap: 10px; transition: all 0.3s var(--ease-spring);
+            cursor: pointer; box-shadow: 0 4px 12px rgba(15,23,42,0.02);
+        }
+        .btn-upload:hover { border-color: var(--cyan); color: var(--cyan); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,184,217,0.15); }
+        .btn-upload:active { transform: translateY(1px) scale(0.97); }
+
         .liquid-progress-container { display: none; width: 100%; height: 50px; border-radius: 12px; background: #E2E8F0; border: 1px solid var(--border); position: relative; overflow: hidden; }
         .liquid-fill { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #00C177, #00B8D9); transition: width 0.3s linear, background 0.3s; }
         .liquid-glow { position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: liquidSweep 1.5s infinite; }
@@ -197,9 +206,15 @@
                     
                     <div class="action-bar" id="actionBar">
                         <div class="data-meta">Payload: <span id="dataSize">0</span> Bytes | Nodes: <span id="nodeCount">0</span></div>
-                        <button class="btn-run" onclick="executeSequence()">
-                            <i class="bi bi-cpu"></i> Execute Sequence
-                        </button>
+                        <div style="display:flex; gap:12px;">
+                            <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleExcelUpload(event)">
+                            <button class="btn-upload" onclick="document.getElementById('excelFile').click()">
+                                <i class="bi bi-file-earmark-spreadsheet"></i> Upload Excel
+                            </button>
+                            <button class="btn-run" onclick="executeSequence()">
+                                <i class="bi bi-cpu"></i> Execute Sequence
+                            </button>
+                        </div>
                     </div>
 
                     <div class="liquid-progress-container" id="progressUI">
@@ -266,6 +281,7 @@
         <div class="sig-text">Crafted by <span class="sig-name">Fares</span></div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
         const cursorGlow = document.getElementById('cursor-glow');
         let mouseX = window.innerWidth / 2;
@@ -329,6 +345,50 @@
                 document.getElementById('orders').style.borderColor = 'rgba(0,193,119,0.6)';
                 setTimeout(() => document.getElementById('orders').style.borderColor = 'var(--border)', 300);
             }
+        }
+
+        function handleExcelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+
+                    if (!rows.length) throw new Error("Sheet is empty");
+
+                    // Find the "PO#" column in the header row; fall back to column A
+                    const headerRow = rows[0].map(h => String(h).trim().toLowerCase());
+                    let poCol = headerRow.findIndex(h => h === 'po#' || h === 'po #' || h === 'po');
+                    if (poCol === -1) poCol = 0;
+
+                    // Pull every PO# value below the header, deduped, in original order
+                    const seen = new Set();
+                    const poNumbers = [];
+                    for (let i = 1; i < rows.length; i++) {
+                        const raw = rows[i][poCol];
+                        if (raw === undefined || raw === null) continue;
+                        const val = String(raw).trim();
+                        if (val && !seen.has(val)) { seen.add(val); poNumbers.push(val); }
+                    }
+
+                    if (!poNumbers.length) throw new Error("No PO# values found in that sheet");
+
+                    document.getElementById('orders').value = poNumbers.join('\n');
+                    updateByteCount();
+                    event.target.value = ''; // allow re-uploading the same file later
+
+                    executeSequence();
+
+                } catch (err) {
+                    alert("Couldn't read that file: " + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
         }
 
         function switchTab(id, el) {
