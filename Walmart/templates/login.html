@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORIGIN | Enterprise Workspace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Caveat:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F8FAFC;
+            --surface: rgba(255, 255, 255, 0.85);
+            --border: rgba(15, 23, 42, 0.08);
+            --emerald: #00C177;
+            --emerald-glow: rgba(0, 193, 119, 0.25);
+            --cyan: #00B8D9;
+            --text-main: #0F172A;
+            --text-dim: #64748B;
+            --input-bg: #FFFFFF;
+            --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body { background-color: var(--bg); color: var(--text-main); height: 100vh; overflow: hidden; position: relative; }
+
+        /* Zero-Latency Ambient Cursor */
+        #cursor-glow {
+            position: fixed; top: 0; left: 0; width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(15, 23, 42, 0.03) 0%, transparent 70%);
+            border-radius: 50%; pointer-events: none; z-index: 9999;
+            will-change: transform; /* Hardware acceleration */
+        }
+
+        #boot-sequence {
+            position: fixed; inset: 0; background: var(--bg); z-index: 5000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1s var(--ease-spring);
+        }
+        .boot-logo svg {
+            width: 60px; height: 60px; stroke: var(--emerald); fill: none; stroke-width: 1.5;
+            stroke-dasharray: 200; stroke-dashoffset: 200;
+            animation: drawLogo 2s var(--ease-spring) forwards, pulseLogo 3s infinite alternate 2s;
+            filter: drop-shadow(0 4px 12px var(--emerald-glow));
+        }
+        .boot-terminal { margin-top: 40px; width: 300px; font-size: 12px; color: var(--text-dim); letter-spacing: 1px; }
+        .boot-line { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; opacity: 0; transform: translateY(10px); }
+        .boot-line svg { width: 12px; height: 12px; stroke: var(--emerald); fill: none; stroke-width: 2; }
+        .boot-progress { width: 300px; height: 2px; background: rgba(15,23,42,0.05); margin-top: 20px; position: relative; overflow: hidden; border-radius: 2px; }
+        .boot-bar { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--emerald); box-shadow: 0 0 10px var(--emerald-glow); }
+
+        @keyframes drawLogo { to { stroke-dashoffset: 0; } }
+        @keyframes pulseLogo { to { transform: scale(1.02); } }
+
+        #main-view { display: grid; grid-template-columns: 1fr 1fr; height: 100vh; opacity: 0; transition: opacity 1.5s var(--ease-spring); }
+
+        .art-container { position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; perspective: 1000px; }
+        canvas { position: absolute; inset: 0; z-index: 1; }
+        
+        .core { position: relative; width: 200px; height: 200px; transform-style: preserve-3d; animation: rotateCore 20s linear infinite; z-index: 2; }
+        .ring { position: absolute; inset: 0; border: 1px solid rgba(15, 23, 42, 0.08); border-radius: 50%; }
+        .ring:nth-child(1) { transform: rotateX(70deg) rotateY(0deg); }
+        .ring:nth-child(2) { transform: rotateX(70deg) rotateY(60deg); }
+        .ring:nth-child(3) { transform: rotateX(70deg) rotateY(120deg); }
+        .core::after {
+            content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 40px; height: 40px; background: var(--emerald); border-radius: 50%; filter: blur(20px);
+            animation: pulseCore 4s infinite alternate; opacity: 0.6;
+        }
+        @keyframes rotateCore { to { transform: rotateX(360deg) rotateY(360deg); } }
+        @keyframes pulseCore { to { filter: blur(35px); transform: translate(-50%, -50%) scale(1.2); } }
+
+        .auth-container { display: flex; align-items: center; justify-content: center; position: relative; }
+        .auth-panel {
+            width: 420px; background: var(--surface); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255,255,255,0.5); border-radius: 24px; padding: 48px;
+            box-shadow: 0 30px 60px rgba(15, 23, 42, 0.05), inset 0 2px 4px rgba(255,255,255,0.5);
+            transform: translateY(40px); opacity: 0; transition: all 1s var(--ease-spring);
+        }
+        
+        .stagger-item { opacity: 0; transform: translateY(15px); transition: all 0.8s var(--ease-spring); }
+        .auth-header { margin-bottom: 30px; }
+        .auth-header h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 8px; color: var(--text-main); }
+        .auth-header p { font-size: 14px; color: var(--text-dim); }
+
+        .error-msg {
+            display: none; background: #FEE2E2; color: #DC2626; padding: 12px; border-radius: 8px;
+            font-size: 13px; font-weight: 500; margin-bottom: 24px; text-align: center;
+            border: 1px solid #FECACA; animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .input-group { position: relative; margin-bottom: 24px; }
+        .input-control {
+            width: 100%; background: var(--input-bg); border: 1px solid var(--border); border-radius: 12px;
+            padding: 20px 16px 12px; color: var(--text-main); font-size: 14px; outline: none; transition: all 0.3s;
+            box-shadow: inset 0 2px 4px rgba(15,23,42,0.02); font-weight: 500;
+        }
+        .input-control:focus { border-color: var(--emerald); box-shadow: 0 0 0 3px var(--emerald-glow), inset 0 2px 4px rgba(15,23,42,0.02); }
+        .input-label {
+            position: absolute; left: 16px; top: 16px; font-size: 14px; color: var(--text-dim);
+            pointer-events: none; transition: all 0.2s var(--ease-spring);
+        }
+        .input-control:focus ~ .input-label, .input-control:not(:placeholder-shown) ~ .input-label {
+            top: 6px; font-size: 10px; color: var(--emerald); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+        }
+
+        .btn-submit {
+            width: 100%; height: 56px; background: var(--text-main); border: none; border-radius: 12px;
+            color: #FFFFFF; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; display: flex;
+            align-items: center; justify-content: center; gap: 12px; position: relative; overflow: hidden;
+            transition: all 0.4s var(--ease-spring); box-shadow: 0 10px 20px rgba(15,23,42,0.1); cursor: pointer;
+        }
+        .btn-submit::before {
+            content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%); transition: transform 0.6s;
+        }
+        .btn-submit:hover { background: var(--emerald); box-shadow: 0 15px 30px var(--emerald-glow); transform: scale(1.02); }
+        .btn-submit:hover::before { transform: translateX(100%); }
+        .btn-submit:active { transform: scale(0.95); }
+
+        .btn-submit.loading { width: 56px; border-radius: 28px; margin: 0 auto; background: transparent; border: 2px solid var(--emerald); pointer-events: none; box-shadow: none; }
+        .btn-submit.success { background: var(--emerald); color: #fff; }
+        .btn-submit.expand { position: fixed; z-index: 9000; transform: scale(50); background: var(--emerald); border: none; opacity: 1; }
+        
+        .btn-text { transition: opacity 0.3s; }
+        .spinner { display: none; width: 20px; height: 20px; border: 2px solid rgba(0,193,119,0.2); border-top-color: var(--emerald); border-radius: 50%; animation: spin 0.8s linear infinite; position: absolute; }
+        .check-icon { display: none; width: 24px; height: 24px; stroke: #fff; stroke-width: 2; fill: none; stroke-dasharray: 50; stroke-dashoffset: 50; position: absolute; }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+
+        .security-badge { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 32px; }
+        .sec-item { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; font-weight: 600; }
+        .sec-item i { width: 6px; height: 6px; background: var(--cyan); border-radius: 50%; }
+
+        .signature { position: fixed; bottom: 32px; right: 40px; display: flex; flex-direction: column; align-items: flex-end; z-index: 100; opacity: 0; transform: translateY(10px); transition: all 1s var(--ease-spring); }
+        .sig-line { width: 0px; height: 1px; background: rgba(15,23,42,0.1); margin-bottom: 8px; transition: width 1.5s var(--ease-spring); position: relative; overflow: hidden; }
+        .sig-line::after { content: ''; position: absolute; top: 0; left: 0; width: 10px; height: 100%; background: var(--emerald); box-shadow: 0 0 10px var(--emerald); animation: sweepLight 20s infinite; }
+        @keyframes sweepLight { 0%, 95% { transform: translateX(-20px); opacity: 0; } 98% { opacity: 1; } 100% { transform: translateX(150px); opacity: 0; } }
+        .sig-text { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 6px; font-weight: 500;}
+        .sig-name { font-family: 'Caveat', cursive; font-size: 20px; color: var(--text-main); text-transform: none; letter-spacing: 0; }
+        .signature:hover .sig-name { color: var(--emerald); }
+        .signature:hover .sig-line { background: rgba(0,193,119,0.3); }
+
+    </style>
+</head>
+<body>
+
+    <div id="cursor-glow"></div>
+
+    <div id="boot-sequence">
+        <div class="boot-logo">
+            <svg viewBox="0 0 100 100">
+                <polygon points="50 15, 85 35, 85 65, 50 85, 15 65, 15 35" />
+                <circle cx="50" cy="50" r="10" />
+            </svg>
+        </div>
+        <div class="boot-terminal" id="terminal">
+            <div class="boot-line" id="msg1"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> Initializing Engine...</div>
+            <div class="boot-line" id="msg2"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> Security Modules Loaded</div>
+            <div class="boot-line" id="msg3"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> Secure Connection Established</div>
+            <div class="boot-line" id="msg4"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> Workspace Ready</div>
+        </div>
+        <div class="boot-progress"><div class="boot-bar" id="boot-bar"></div></div>
+    </div>
+
+    <div id="main-view">
+        <div class="art-container">
+            <canvas id="particleCanvas"></canvas>
+            <div class="core"><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>
+        </div>
+
+        <div class="auth-container">
+            <div class="auth-panel" id="auth-panel">
+                <div class="auth-header stagger-item">
+                    <h1>Sign In</h1>
+                    <p>Access your enterprise workspace securely.</p>
+                </div>
+
+                <div id="error-msg" class="error-msg"></div>
+
+                <form id="loginForm">
+                    <div class="input-group stagger-item">
+                        <input type="text" name="company" class="input-control" placeholder=" " required value="DAX">
+                        <label class="input-label">Company</label>
+                    </div>
+                    <div class="input-group stagger-item">
+                        <input type="text" name="username" class="input-control" placeholder=" " required>
+                        <label class="input-label">Username</label>
+                    </div>
+                    <div class="input-group stagger-item">
+                        <input type="password" name="password" class="input-control" placeholder=" " required>
+                        <label class="input-label">Password</label>
+                    </div>
+
+                    <div class="stagger-item">
+                        <button type="submit" class="btn-submit" id="submitBtn">
+                            <span class="btn-text" id="btnText">Enter Workspace</span>
+                            <div class="spinner" id="btnSpinner"></div>
+                            <svg class="check-icon" id="btnCheck" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="security-badge stagger-item">
+                    <div class="sec-item"><i></i> AES-256 Encryption</div>
+                    <div class="sec-item"><i></i> Session Protection</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="signature" id="signature">
+        <div class="sig-line" id="sig-line"></div>
+        <div class="sig-text">Crafted by <span class="sig-name">Fares</span></div>
+    </div>
+
+    <script>
+        // Smooth Hardware-Accelerated Cursor Glow (Zero Latency)
+        const cursorGlow = document.getElementById('cursor-glow');
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let glowX = mouseX;
+        let glowY = mouseY;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animateGlow() {
+            // Smooth lerp creates a buttery trailing effect behind the native hardware cursor
+            glowX += (mouseX - glowX) * 0.15;
+            glowY += (mouseY - glowY) * 0.15;
+            cursorGlow.style.transform = `translate3d(${glowX}px, ${glowY}px, 0) translate(-50%, -50%)`;
+            requestAnimationFrame(animateGlow);
+        }
+        animateGlow();
+
+        document.querySelectorAll('button, input').forEach(el => {
+            el.addEventListener('mouseenter', () => { cursorGlow.style.background = 'radial-gradient(circle, rgba(0,193,119,0.1) 0%, transparent 70%)'; });
+            el.addEventListener('mouseleave', () => { cursorGlow.style.background = 'radial-gradient(circle, rgba(15,23,42,0.03) 0%, transparent 70%)'; });
+        });
+
+        const boot = async () => {
+            const delay = ms => new Promise(res => setTimeout(res, ms));
+            const msgs = ['msg1', 'msg2', 'msg3', 'msg4'];
+            const bar = document.getElementById('boot-bar');
+            
+            await delay(500);
+            for(let i=0; i<msgs.length; i++) {
+                document.getElementById(msgs[i]).style.opacity = '1';
+                document.getElementById(msgs[i]).style.transform = 'translateY(0)';
+                bar.style.width = `${(i+1)*25}%`;
+                await delay(400);
+            }
+            await delay(800);
+            document.getElementById('boot-sequence').style.opacity = '0';
+            
+            setTimeout(() => {
+                document.getElementById('boot-sequence').style.display = 'none';
+                document.getElementById('main-view').style.opacity = '1';
+                
+                document.getElementById('auth-panel').style.opacity = '1';
+                document.getElementById('auth-panel').style.transform = 'translateY(0)';
+                
+                document.querySelectorAll('.stagger-item').forEach((el, index) => {
+                    setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }, 200 + (index * 100));
+                });
+
+                setTimeout(() => {
+                    document.getElementById('signature').style.opacity = '1';
+                    document.getElementById('signature').style.transform = 'translateY(0)';
+                    document.getElementById('sig-line').style.width = '120px';
+                }, 1000);
+            }, 1000);
+        };
+        window.onload = boot;
+
+        const form = document.getElementById('loginForm');
+        const btn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+        const btnCheck = document.getElementById('btnCheck');
+        const errorMsg = document.getElementById('error-msg');
+        const authPanel = document.getElementById('auth-panel');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorMsg.style.display = 'none';
+            
+            btn.classList.add('loading');
+            btnText.style.opacity = '0';
+            setTimeout(() => { btnText.style.display = 'none'; btnSpinner.style.display = 'block'; }, 200);
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        company: form.company.value,
+                        username: form.username.value,
+                        password: form.password.value
+                    })
+                });
+                
+                const data = await response.json();
+
+                if (data.success) {
+                    btnSpinner.style.display = 'none';
+                    btn.classList.remove('loading');
+                    btn.classList.add('success');
+                    btnCheck.style.display = 'block';
+                    btnCheck.style.animation = 'drawCheck 0.5s ease forwards';
+                    
+                    setTimeout(() => {
+                        btnCheck.style.display = 'none';
+                        btn.classList.add('expand');
+                        setTimeout(() => { window.location.href = '/dashboard'; }, 600);
+                    }, 800);
+                } else {
+                    throw new Error(data.error || "Authentication failed");
+                }
+            } catch (err) {
+                // Handle Failure UI
+                setTimeout(() => {
+                    btnSpinner.style.display = 'none';
+                    btn.classList.remove('loading');
+                    btnText.style.display = 'block';
+                    setTimeout(() => { btnText.style.opacity = '1'; }, 50);
+                    
+                    errorMsg.innerText = err.message;
+                    errorMsg.style.display = 'block';
+                    
+                    // Shake animation
+                    authPanel.classList.remove('shake');
+                    void authPanel.offsetWidth; // Trigger reflow
+                    authPanel.classList.add('shake');
+                }, 800); // Give the spinner a tiny bit of time before failing
+            }
+        });
+
+        // Abstract Canvas Particles
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles = [];
+
+        function initCanvas() {
+            width = canvas.width = document.querySelector('.art-container').clientWidth;
+            height = canvas.height = document.querySelector('.art-container').clientHeight;
+            particles = [];
+            for(let i = 0; i < 50; i++) {
+                particles.push({
+                    x: Math.random() * width, y: Math.random() * height,
+                    s: Math.random() * 1.5 + 0.5,
+                    vx: (Math.random() - 0.5) * 0.2, vy: (Math.random() - 0.5) * 0.2,
+                    a: Math.random() * 0.4 + 0.1
+                });
+            }
+        }
+        function drawParticles() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if(p.x < 0 || p.x > width) p.vx *= -1;
+                if(p.y < 0 || p.y > height) p.vy *= -1;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(15, 23, 42, ${p.a})`; ctx.fill();
+            });
+            requestAnimationFrame(drawParticles);
+        }
+        window.addEventListener('resize', initCanvas);
+        initCanvas(); drawParticles();
+    </script>
+</body>
+</html>

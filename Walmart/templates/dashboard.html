@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORIGIN | Workspace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Caveat:wght@500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F8FAFC;
+            --surface: rgba(255, 255, 255, 0.9);
+            --surface-solid: #FFFFFF;
+            --border: rgba(15, 23, 42, 0.08);
+            --emerald: #00C177;
+            --emerald-glow: rgba(0, 193, 119, 0.25);
+            --cyan: #00B8D9;
+            --text-main: #0F172A;
+            --text-dim: #64748B;
+            --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; position: relative; }
+
+        #cursor-glow {
+            position: fixed; top: 0; left: 0; width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(15, 23, 42, 0.03) 0%, transparent 70%);
+            border-radius: 50%; pointer-events: none; z-index: 9999; will-change: transform;
+        }
+
+        .ambient-bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 0%, rgba(255,255,255,1) 0%, transparent 80%); }
+
+        #welcome-sequence {
+            position: fixed; inset: 0; background: var(--emerald); z-index: 5000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1.5s ease, background 0.5s ease;
+        }
+        .welcome-content { text-align: center; opacity: 0; transform: translateY(20px); transition: all 1s var(--ease-spring); }
+        .w-logo { width: 48px; height: 48px; stroke: var(--emerald); fill: none; stroke-width: 1.5; filter: drop-shadow(0 4px 10px var(--emerald-glow)); margin-bottom: 30px; }
+        .w-title { font-size: 20px; font-weight: 400; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+        .w-name { font-size: 48px; font-weight: 600; letter-spacing: -1px; color: var(--text-main); }
+        .w-line { width: 0%; height: 1px; background: var(--emerald); margin: 30px auto; box-shadow: 0 0 15px var(--emerald-glow); transition: width 1s var(--ease-spring); }
+        .w-status { font-size: 13px; color: var(--text-dim); letter-spacing: 1px; font-family: monospace; font-weight: 500;}
+        .w-progress { width: 200px; height: 2px; background: rgba(15,23,42,0.05); margin: 20px auto 0; position: relative; overflow: hidden; }
+        .w-bar { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--emerald); }
+
+        #dashboard-view { opacity: 0; transition: opacity 1s ease; padding-top: 80px; }
+
+        .nav {
+            position: fixed; top: 0; left: 0; right: 0; height: 72px; background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 1000;
+            transform: translateY(-100%); transition: transform 1s var(--ease-spring); box-shadow: 0 4px 20px rgba(15,23,42,0.02);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 16px; }
+        .nav-brand svg { width: 24px; height: 24px; stroke: var(--emerald); fill: none; stroke-width: 2; filter: drop-shadow(0 2px 4px var(--emerald-glow)); }
+        .nav-title { font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+        .nav-user { display: flex; align-items: center; gap: 24px; }
+        .nav-badge { background: var(--surface-solid); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--text-main); display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(15,23,42,0.02); }
+        .nav-badge i { width: 6px; height: 6px; background: var(--emerald); border-radius: 50%; box-shadow: 0 0 6px var(--emerald); }
+        .logout-btn { color: var(--text-dim); font-weight: 500; text-decoration: none; font-size: 13px; transition: color 0.3s; }
+        .logout-btn:hover { color: var(--emerald); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+        .anim-up { opacity: 0; transform: translateY(30px); transition: all 1s var(--ease-spring); }
+
+        .header-area { margin-bottom: 40px; }
+        .header-area h1 { font-size: 40px; font-weight: 600; letter-spacing: -1px; margin-bottom: 10px; color: var(--text-main); }
+        .header-area p { color: var(--text-dim); font-size: 15px; font-weight: 500; }
+
+        .workspace-grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 40px; }
+        
+        .glass-card {
+            background: var(--surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.8); border-radius: 20px; padding: 32px;
+            box-shadow: 0 20px 50px rgba(15,23,42,0.04), inset 0 2px 4px rgba(255,255,255,1); position: relative; transition: all 0.4s var(--ease-spring);
+        }
+        .glass-card:hover { border-color: rgba(0,193,119,0.2); box-shadow: 0 25px 60px rgba(15,23,42,0.06); transform: translateY(-2px); }
+
+        .editor {
+            width: 100%; height: 200px; background: #F1F5F9; border: 1px solid var(--border);
+            border-radius: 12px; padding: 24px; color: var(--text-main); font-family: 'SF Mono', Consolas, monospace;
+            font-size: 14px; line-height: 1.6; resize: none; outline: none; transition: 0.3s;
+            box-shadow: inset 0 2px 4px rgba(15,23,42,0.02);
+        }
+        .editor:focus { border-color: var(--emerald); box-shadow: 0 0 0 3px var(--emerald-glow), inset 0 2px 4px rgba(15,23,42,0.02); }
+        .editor::placeholder { color: #94A3B8; font-weight: 500; }
+
+        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
+        .data-meta { font-size: 12px; color: var(--text-dim); font-family: monospace; font-weight: 600; }
+        
+        .btn-run {
+            background: var(--text-main); border: none; border-radius: 12px;
+            padding: 0 32px; height: 50px; color: #fff; font-size: 14px; font-weight: 600;
+            display: flex; align-items: center; gap: 12px; transition: all 0.3s var(--ease-spring);
+            position: relative; overflow: hidden; box-shadow: 0 8px 20px rgba(15,23,42,0.15); cursor: pointer;
+        }
+        .btn-run::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transform: translateX(-100%); transition: 0.5s; }
+        .btn-run:hover { background: var(--emerald); box-shadow: 0 12px 25px var(--emerald-glow); transform: translateY(-2px); }
+        .btn-run:hover::before { transform: translateX(100%); }
+        .btn-run:active { transform: translateY(1px) scale(0.97); }
+
+        .liquid-progress-container { display: none; width: 100%; height: 50px; border-radius: 12px; background: #E2E8F0; border: 1px solid var(--border); position: relative; overflow: hidden; }
+        .liquid-fill { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #00C177, #00B8D9); transition: width 0.3s linear, background 0.3s; }
+        .liquid-glow { position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: liquidSweep 1.5s infinite; }
+        .progress-text-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; letter-spacing: 1px; color: #fff; z-index: 10; text-shadow: 0 1px 2px rgba(15,23,42,0.2); }
+        @keyframes liquidSweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+        .results-section { display: none; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-box { background: var(--surface-solid); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: 0.3s; box-shadow: 0 4px 12px rgba(15,23,42,0.02); }
+        .stat-box:hover { border-color: rgba(15,23,42,0.15); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(15,23,42,0.04); }
+        .s-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; font-weight: 600; letter-spacing: 1px; margin-bottom: 8px; }
+        .s-val { font-size: 32px; font-weight: 600; display: flex; align-items: baseline; gap: 8px; color: var(--text-main); letter-spacing: -0.5px; }
+        .s-trend { font-size: 14px; color: var(--emerald); }
+
+        .tabs { display: flex; gap: 32px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+        .tab { font-size: 13px; font-weight: 600; color: var(--text-dim); padding-bottom: 12px; position: relative; transition: 0.3s; cursor: pointer; }
+        .tab:hover { color: var(--text-main); }
+        .tab.active { color: var(--text-main); }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: var(--emerald); border-radius: 2px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; padding: 16px; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 16px; border-bottom: 1px solid rgba(15,23,42,0.04); transition: 0.2s; font-weight: 500; }
+        tr:hover td { background: #F8FAFC; }
+        .mono { font-family: 'SF Mono', Consolas, monospace; color: var(--text-main); font-weight: 600; }
+        
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .st-ok { background: rgba(0,193,119,0.1); color: #00A364; border: 1px solid rgba(0,193,119,0.2); }
+        .st-warn { background: #FEF3C7; color: #D97706; border: 1px solid #FDE68A; }
+        .st-err { background: #FEE2E2; color: #DC2626; border: 1px solid #FECACA; }
+        
+        .copy-act { opacity: 0; font-size: 13px; color: var(--text-dim); margin-left: 8px; transition: 0.2s; cursor: pointer; }
+        tr:hover .copy-act { opacity: 1; }
+        .copy-act:hover { color: var(--emerald); transform: scale(1.2); }
+
+        .btn-copy-col {
+            background: #F1F5F9; border: 1px solid var(--border); color: var(--text-dim);
+            font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 6px; margin-left: 10px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-copy-col:hover { background: var(--emerald); color: #fff; border-color: var(--emerald); }
+
+        .signature { position: fixed; bottom: 32px; right: 40px; display: flex; flex-direction: column; align-items: flex-end; z-index: 100; opacity: 0; transition: opacity 1s var(--ease-spring); }
+        .sig-line { width: 120px; height: 1px; background: rgba(15,23,42,0.1); margin-bottom: 8px; position: relative; overflow: hidden; transition: 0.3s; }
+        .sig-line::after { content: ''; position: absolute; top: 0; left: 0; width: 10px; height: 100%; background: var(--emerald); box-shadow: 0 0 10px var(--emerald); animation: sweepLight 20s infinite; }
+        @keyframes sweepLight { 0%, 95% { transform: translateX(-20px); opacity: 0; } 98% { opacity: 1; } 100% { transform: translateX(150px); opacity: 0; } }
+        .sig-text { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 6px; font-weight: 600;}
+        .sig-name { font-family: 'Caveat', cursive; font-size: 20px; color: var(--text-main); text-transform: none; letter-spacing: 0; transition: 0.3s; font-weight: 600; }
+        .signature:hover .sig-name { color: var(--emerald); }
+        .signature:hover .sig-line { background: rgba(0,193,119,0.3); }
+
+    </style>
+</head>
+<body>
+
+    <div id="cursor-glow"></div>
+    <div class="ambient-bg"></div>
+
+    <div id="welcome-sequence">
+        <div class="welcome-content" id="w-content">
+            <svg class="w-logo" viewBox="0 0 100 100">
+                <polygon points="50 15, 85 35, 85 65, 50 85, 15 65, 15 35" />
+                <circle cx="50" cy="50" r="10" />
+            </svg>
+            <div class="w-title">Welcome</div>
+            <div class="w-name">{{ username }}</div>
+            <div class="w-line" id="w-line"></div>
+            <div class="w-status" id="w-status">Preparing your workspace...</div>
+            <div class="w-progress"><div class="w-bar" id="w-bar"></div></div>
+        </div>
+    </div>
+
+    <div id="dashboard-view">
+        <nav class="nav" id="main-nav">
+            <div class="nav-brand">
+                <svg viewBox="0 0 100 100"><polygon points="50 15, 85 35, 85 65, 50 85, 15 65, 15 35"/><circle cx="50" cy="50" r="10"/></svg>
+                <span class="nav-title">ORIGIN</span>
+            </div>
+            <div class="nav-user">
+                <div class="nav-badge"><i></i> {{ company }} Secure</div>
+                <a href="/logout" class="logout-btn">End Session</a>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="header-area anim-up">
+                <h1>Extraction Engine</h1>
+                <p>Initialize bulk processing pipeline. Awaiting payload.</p>
+            </div>
+
+            <div class="workspace-grid">
+                <div class="glass-card anim-up" style="transition-delay: 0.1s;">
+                    <textarea id="orders" class="editor" placeholder="> Paste identifiers block here..." oninput="updateByteCount()"></textarea>
+                    
+                    <div class="action-bar" id="actionBar">
+                        <div class="data-meta">Payload: <span id="dataSize">0</span> Bytes | Nodes: <span id="nodeCount">0</span></div>
+                        <button class="btn-run" onclick="executeSequence()">
+                            <i class="bi bi-cpu"></i> Execute Sequence
+                        </button>
+                    </div>
+
+                    <div class="liquid-progress-container" id="progressUI">
+                        <div class="liquid-fill" id="liquidFill"></div>
+                        <div class="liquid-glow"></div>
+                        <div class="progress-text-overlay" id="progressText">Synthesizing data stream...</div>
+                    </div>
+                </div>
+
+                <div class="results-section" id="resultsSection">
+                    <div class="stats-grid anim-up">
+                        <div class="stat-box"><div class="s-label">Total Processed</div><div class="s-val" id="stTotal">0</div></div>
+                        <div class="stat-box"><div class="s-label">Verified</div><div class="s-val"><span id="stSuccess">0</span><span class="s-trend"><i class="bi bi-check-all"></i></span></div></div>
+                        <div class="stat-box"><div class="s-label">Anomalies</div><div class="s-val"><span id="stFailed" style="color:#D97706;">0</span></div></div>
+                        <div class="stat-box"><div class="s-label">Latency</div><div class="s-val"><span id="stTime">0.00</span><span style="font-size:14px; color:var(--text-dim); margin-left:2px;">s</span></div></div>
+                    </div>
+
+                    <div class="glass-card anim-up" style="transition-delay: 0.1s;">
+                        <div class="tabs">
+                            <div class="tab active" onclick="switchTab('shipped', this)">Verified (<span id="countShipped">0</span>)</div>
+                            <div class="tab" onclick="switchTab('notracking', this)">Processing (<span id="countNoTrk">0</span>)</div>
+                            <div class="tab" onclick="switchTab('notfound', this)">Anomalies (<span id="countErr">0</span>)</div>
+                        </div>
+
+                        <div class="table-wrap">
+                            <table id="tbl-shipped">
+                                <thead>
+                                    <tr>
+                                        <th>Identifier <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 0, this)"><i class="bi bi-files"></i> Copy All</button></th>
+                                        <th>Status</th>
+                                        <th>Trace ID <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 2, this)"><i class="bi bi-files"></i> Copy All</button></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bd-shipped"></tbody>
+                            </table>
+                            <table id="tbl-notracking" style="display:none;">
+                                <thead>
+                                    <tr>
+                                        <th>Identifier <button class="btn-copy-col" onclick="copyColumn('bd-notracking', 0, this)"><i class="bi bi-files"></i> Copy All</button></th>
+                                        <th>Status</th>
+                                        <th>System Log</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bd-notracking"></tbody>
+                            </table>
+                            <table id="tbl-notfound" style="display:none;">
+                                <thead>
+                                    <tr>
+                                        <th>Identifier <button class="btn-copy-col" onclick="copyColumn('bd-notfound', 0, this)"><i class="bi bi-files"></i> Copy All</button></th>
+                                        <th>System Log</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bd-notfound"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="signature" id="signature">
+        <div class="sig-line"></div>
+        <div class="sig-text">Crafted by <span class="sig-name">Fares</span></div>
+    </div>
+
+    <script>
+        const cursorGlow = document.getElementById('cursor-glow');
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let glowX = mouseX;
+        let glowY = mouseY;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animateGlow() {
+            glowX += (mouseX - glowX) * 0.15;
+            glowY += (mouseY - glowY) * 0.15;
+            cursorGlow.style.transform = `translate3d(${glowX}px, ${glowY}px, 0) translate(-50%, -50%)`;
+            requestAnimationFrame(animateGlow);
+        }
+        animateGlow();
+
+        document.querySelectorAll('.btn-run, .tab, .logout-btn, .copy-act, .btn-copy-col').forEach(el => {
+            el.addEventListener('mouseenter', () => { cursorGlow.style.background = 'radial-gradient(circle, rgba(0,193,119,0.1) 0%, transparent 70%)'; });
+            el.addEventListener('mouseleave', () => { cursorGlow.style.background = 'radial-gradient(circle, rgba(15,23,42,0.03) 0%, transparent 70%)'; });
+        });
+
+        window.onload = () => {
+            setTimeout(() => { document.getElementById('welcome-sequence').style.background = 'var(--bg)'; }, 50);
+            
+            setTimeout(() => {
+                document.getElementById('w-content').style.opacity = '1';
+                document.getElementById('w-content').style.transform = 'translateY(0)';
+                
+                setTimeout(() => { document.getElementById('w-line').style.width = '100%'; }, 500);
+                setTimeout(() => { document.getElementById('w-bar').style.width = '100%'; document.getElementById('w-bar').style.transition = 'width 1s linear'; }, 800);
+                
+                setTimeout(() => {
+                    document.getElementById('welcome-sequence').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('welcome-sequence').style.display = 'none';
+                        document.getElementById('dashboard-view').style.opacity = '1';
+                        
+                        document.getElementById('main-nav').style.transform = 'translateY(0)';
+                        
+                        document.querySelectorAll('.anim-up').forEach((el, i) => {
+                            setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }, i * 150);
+                        });
+
+                        setTimeout(() => { document.getElementById('signature').style.opacity = '1'; }, 1000);
+                    }, 1000);
+                }, 2200);
+            }, 300);
+        };
+
+        function updateByteCount() {
+            const val = document.getElementById('orders').value;
+            const lines = val.split(/\n/).filter(l => l.trim()).length;
+            document.getElementById('dataSize').innerText = new Blob([val]).size;
+            document.getElementById('nodeCount').innerText = lines;
+            
+            if(lines > 0) {
+                document.getElementById('orders').style.borderColor = 'rgba(0,193,119,0.6)';
+                setTimeout(() => document.getElementById('orders').style.borderColor = 'var(--border)', 300);
+            }
+        }
+
+        function switchTab(id, el) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            ['shipped', 'notracking', 'notfound'].forEach(t => { document.getElementById(`tbl-${t}`).style.display = (t === id) ? 'table' : 'none'; });
+        }
+
+        async function copySingle(text, el) {
+            try {
+                await navigator.clipboard.writeText(text);
+                const og = el.className;
+                el.className = 'bi bi-check-lg copy-act'; el.style.color = 'var(--emerald)';
+                setTimeout(() => { el.className = og; el.style.color = ''; }, 1000);
+            } catch(e) {}
+        }
+
+        async function copyColumn(tbodyId, colIndex, btnElement) {
+            const rows = document.querySelectorAll(`#${tbodyId} tr`);
+            let textArray = [];
+            rows.forEach(row => {
+                const cell = row.cells[colIndex];
+                if (cell && cell.hasAttribute('data-raw')) textArray.push(cell.getAttribute('data-raw'));
+            });
+            if (textArray.length > 0) {
+                try {
+                    await navigator.clipboard.writeText(textArray.join('\n'));
+                    const ogHtml = btnElement.innerHTML;
+                    btnElement.innerHTML = '<i class="bi bi-check-lg"></i> Copied';
+                    btnElement.style.background = 'var(--emerald)';
+                    btnElement.style.color = '#fff';
+                    btnElement.style.borderColor = 'var(--emerald)';
+                    setTimeout(() => {
+                        btnElement.innerHTML = ogHtml;
+                        btnElement.style.background = '';
+                        btnElement.style.color = '';
+                        btnElement.style.borderColor = '';
+                    }, 1500);
+                } catch(e) {}
+            }
+        }
+
+        function runLiquidSim(totalItems) {
+            const msgs = ["Compiling payload matrix...", "Bypassing security gate...", "Fetching neural records...", "Synthesizing export...", "Finalizing node links..."];
+            const fill = document.getElementById('liquidFill');
+            const txt = document.getElementById('progressText');
+            let p = 0;
+            const int = setInterval(() => {
+                p += Math.random() * 12;
+                if(p > 92) p = 92;
+                fill.style.width = p + '%';
+                txt.innerText = msgs[Math.floor(Math.random() * msgs.length)] + ` [${Math.floor(p)}%]`;
+            }, 300);
+            return int;
+        }
+
+        function countUp(id, target) {
+            let cur = 0; const el = document.getElementById(id);
+            const inc = target / 30; 
+            if(target === 0) { el.innerText = 0; return; }
+            const timer = setInterval(() => {
+                cur += inc;
+                if(cur >= target) { clearInterval(timer); el.innerText = target; }
+                else { el.innerText = Math.floor(cur); }
+            }, 30);
+        }
+
+        async function executeSequence() {
+            const raw = document.getElementById('orders').value.trim();
+            if(!raw) return;
+
+            document.getElementById('actionBar').style.display = 'none';
+            document.getElementById('progressUI').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+            
+            document.querySelectorAll('.results-section .anim-up').forEach(el => { el.style.opacity = '0'; el.style.transform = 'translateY(30px)'; });
+
+            const sim = runLiquidSim(raw.split(/\n/).length);
+            const t0 = performance.now();
+
+            try {
+                const res = await fetch('/api/extract', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({orders: raw}) });
+                
+                if(res.status === 401) { window.location.href='/'; return; }
+                
+                const data = await res.json();
+                clearInterval(sim);
+
+                if(data.error) { 
+                    document.getElementById('liquidFill').style.background = 'linear-gradient(90deg, #EF4444, #F87171)';
+                    document.getElementById('liquidFill').style.width = '100%';
+                    document.getElementById('progressText').innerText = "ERROR: " + data.error;
+                    
+                    setTimeout(() => {
+                        document.getElementById('progressUI').style.display = 'none';
+                        document.getElementById('actionBar').style.display = 'flex';
+                        document.getElementById('liquidFill').style.background = 'linear-gradient(90deg, #00C177, #00B8D9)';
+                        document.getElementById('liquidFill').style.width = '0%';
+                    }, 4000);
+                    return; 
+                }
+                
+                document.getElementById('liquidFill').style.width = '100%';
+                document.getElementById('progressText').innerText = "Sequence Complete [100%]";
+                const t1 = performance.now();
+                const lat = ((t1-t0)/1000).toFixed(2);
+
+                document.getElementById('countShipped').innerText = data.shipped.length;
+                document.getElementById('bd-shipped').innerHTML = data.shipped.map(r => `<tr><td data-raw="${r.order}" class="mono">${r.order} <i class="bi bi-clipboard copy-act" onclick="copySingle('${r.order}', this)"></i></td><td><span class="status-badge st-ok">${r.status}</span></td><td data-raw="${r.tracking}" class="mono" style="color:var(--text-dim);">${r.tracking} <i class="bi bi-clipboard copy-act" onclick="copySingle('${r.tracking}', this)"></i></td></tr>`).join('');
+
+                document.getElementById('countNoTrk').innerText = data.no_tracking.length;
+                document.getElementById('bd-notracking').innerHTML = data.no_tracking.map(r => `<tr><td data-raw="${r.order}" class="mono">${r.order} <i class="bi bi-clipboard copy-act" onclick="copySingle('${r.order}', this)"></i></td><td><span class="status-badge st-warn">${r.status}</span></td><td style="color:var(--text-dim);">${r.reason}</td></tr>`).join('');
+
+                document.getElementById('countErr').innerText = data.not_found.length;
+                document.getElementById('bd-notfound').innerHTML = data.not_found.map(r => `<tr><td data-raw="${r.order}" class="mono" style="color:#DC2626">${r.order} <i class="bi bi-clipboard copy-act" onclick="copySingle('${r.order}', this)"></i></td><td style="color:var(--text-dim);">${r.reason}</td></tr>`).join('');
+
+                setTimeout(() => {
+                    document.getElementById('progressUI').style.display = 'none';
+                    document.getElementById('actionBar').style.display = 'flex';
+                    document.getElementById('resultsSection').style.display = 'block';
+                    
+                    const resAnims = document.querySelectorAll('.results-section .anim-up');
+                    resAnims.forEach((el, i) => { setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }, i * 150); });
+
+                    setTimeout(() => {
+                        countUp('stTotal', data.shipped.length + data.no_tracking.length + data.not_found.length);
+                        countUp('stSuccess', data.shipped.length);
+                        countUp('stFailed', data.not_found.length + data.no_tracking.length);
+                        document.getElementById('stTime').innerText = lat;
+                    }, 300);
+
+                }, 800);
+
+            } catch (err) {
+                clearInterval(sim);
+                document.getElementById('liquidFill').style.background = '#EF4444';
+                document.getElementById('liquidFill').style.width = '100%';
+                document.getElementById('progressText').innerText = "System Exception Occurred";
+                
+                setTimeout(() => {
+                    document.getElementById('progressUI').style.display = 'none';
+                    document.getElementById('actionBar').style.display = 'flex';
+                    document.getElementById('liquidFill').style.background = 'linear-gradient(90deg, #00C177, #00B8D9)';
+                    document.getElementById('liquidFill').style.width = '0%';
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
