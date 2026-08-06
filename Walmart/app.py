@@ -95,8 +95,14 @@ async def fetch_order(http_session, order_number, token, semaphore):
         except Exception as e:
             return {"order": order_number, "category": "NOT_FOUND", "reason": f"Error: {type(e).__name__}"}
 
+# Max orders processed concurrently. Deposco's own response time (~1.5s/call) is the
+# real bottleneck, not your machine — raising this shortens the queue, not the calls.
+# Bump it up in increments (25 -> 40 -> 60) and watch for a rise in errors/timeouts,
+# which means you've hit Deposco's rate limit; back off to the last stable value.
+CONCURRENCY = 25
+
 async def process_batch(company, username, password, order_numbers):
-    semaphore = asyncio.Semaphore(10)
+    semaphore = asyncio.Semaphore(CONCURRENCY)
     async with aiohttp.ClientSession() as http_session:
         token, auth_msg = await authenticate_deposco(http_session, company, username, password)
         if not token:
