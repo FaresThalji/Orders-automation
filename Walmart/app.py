@@ -33,6 +33,7 @@ async def fetch_order(http_session, order_number, token, semaphore):
     
     async with semaphore:
         try:
+            # 1. Quick Search to find Order ID and Created Date
             search_url = f"https://dax.deposco.com/deposco/resources/secure/search/quick_search?term={order_number}&entity=&timestamp={int(time.time() * 1000)}"
             async with http_session.get(search_url, headers=headers, timeout=10) as res_search:
                 if res_search.status != 200:
@@ -43,16 +44,42 @@ async def fetch_order(http_session, order_number, token, semaphore):
                     return {"order": order_number, "category": "NOT_FOUND", "reason": "Order does not exist"}
                     
                 order_id = None
+                created_date = "N/A"
+                
                 for entity in search_data:
                     if entity.get("name") == "OrderHeader":
                         results = entity.get("results", [])
                         if results:
-                            order_id = results[0].get("id")
+                            order_data = results[0]
+                            order_id = order_data.get("id")
+                            created_date = order_data.get("createdDate", "N/A")
                             break
                             
                 if not order_id:
                     return {"order": order_number, "category": "NOT_FOUND", "reason": "No OrderHeader ID Found"}
 
+            # 2. Extract Customer Order and Ship From via correct view_layout API
+            customer_order = "N/A"
+            ship_from = "N/A"
+            
+            header_url = f"https://dax.deposco.com/deposco/resources/secure/entity/view_layout/page_layout?entityName=OrderHeader&instanceId={order_id}&canEdit=true&showDefaultLayouts=true&timestamp={int(time.time() * 1000)}"
+            
+            async with http_session.get(header_url, headers=headers, timeout=10) as res_header:
+                if res_header.status == 200:
+                    header_data = await res_header.json(content_type=None)
+                    
+                    # Iterate exactly through the JSON structure you provided
+                    for section in header_data.get("sections", []):
+                        for attr in section.get("pageAttributes", []):
+                            fname = attr.get("fieldName")
+                            
+                            # Grab the values if the keys exist
+                            if fname == "customerOrderNumber" and "value" in attr:
+                                customer_order = str(attr.get("value"))
+                            elif fname == "shipFrom" and "value" in attr:
+                                ship_from = str(attr.get("value"))
+
+            # 3. Get Related Shipments
             related_url = "https://dax.deposco.com/deposco/resources/secure/entity/related_info"
             shipment_payload = {
                 "instanceId": int(order_id), "relLayoutId": 198081, "page": 1, 
@@ -64,14 +91,31 @@ async def fetch_order(http_session, order_number, token, semaphore):
                 shipments = ship_data.get("data", {}).get("response", [])
                 
                 if not shipments:
-                    return {"order": order_number, "category": "NO_TRACKING", "status": "Processing/Unshipped", "reason": "No shipments attached"}
+                    return {
+                        "order": order_number, 
+                        "customer_order": customer_order,
+                        "ship_from": ship_from,
+                        "created_date": created_date,
+                        "category": "NO_TRACKING", 
+                        "status": "Processing/Unshipped", 
+                        "reason": "No shipments attached"
+                    }
                     
                 shipment_id = shipments[0].get("id")
                 shipment_status = shipments[0].get("status", "Unknown")
                 
                 if not shipment_id:
-                    return {"order": order_number, "category": "NO_TRACKING", "status": shipment_status, "reason": "Shipment ID missing"}
+                    return {
+                        "order": order_number, 
+                        "customer_order": customer_order,
+                        "ship_from": ship_from,
+                        "created_date": created_date,
+                        "category": "NO_TRACKING", 
+                        "status": shipment_status, 
+                        "reason": "Shipment ID missing"
+                    }
 
+            # 4. Get Shipment Lines (Tracking)
             lines_payload = {
                 "instanceId": int(shipment_id), "relLayoutId": 199376, "page": 1, 
                 "maxRows": 100, "maxRowsConsolidatedOHs": 5, "sortByColumns": [], 
@@ -88,17 +132,29 @@ async def fetch_order(http_session, order_number, token, semaphore):
                         trackings.append(str(trk))
                         
                 if not trackings:
-                    return {"order": order_number, "category": "NO_TRACKING", "status": shipment_status, "reason": "No tracking numbers on lines"}
+                    return {
+                        "order": order_number, 
+                        "customer_order": customer_order,
+                        "ship_from": ship_from,
+                        "created_date": created_date,
+                        "category": "NO_TRACKING", 
+                        "status": shipment_status, 
+                        "reason": "No tracking numbers on lines"
+                    }
                     
-                return {"order": order_number, "category": "SHIPPED", "status": shipment_status, "tracking": " | ".join(trackings)}
+                return {
+                    "order": order_number, 
+                    "customer_order": customer_order,
+                    "ship_from": ship_from,
+                    "created_date": created_date,
+                    "category": "SHIPPED", 
+                    "status": shipment_status, 
+                    "tracking": " | ".join(trackings)
+                }
 
         except Exception as e:
             return {"order": order_number, "category": "NOT_FOUND", "reason": f"Error: {type(e).__name__}"}
 
-# Max orders processed concurrently. Deposco's own response time (~1.5s/call) is the
-# real bottleneck, not your machine — raising this shortens the queue, not the calls.
-# Bump it up in increments (25 -> 40 -> 60) and watch for a rise in errors/timeouts,
-# which means you've hit Deposco's rate limit; back off to the last stable value.
 CONCURRENCY = 25
 
 async def process_batch(company, username, password, order_numbers):
@@ -168,7 +224,6 @@ async def extract():
     return jsonify(results)
 
 if __name__ == "__main__":
-    # Prevent duplicate browser tabs on Flask debug reloader boot
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         threading.Timer(1.5, lambda: webbrowser.open("http://127.0.0.1:5000")).start()
     app.run(debug=True, port=5000)
