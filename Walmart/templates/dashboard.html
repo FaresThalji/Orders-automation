@@ -3,409 +3,617 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORIGIN | Workspace</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Caveat:wght@500&display=swap" rel="stylesheet">
+    <title>ORIGIN | Enterprise Operations</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
+        /* =========================================
+           ORIGIN OS: CORE KINEMATICS & VARIABLES
+           ========================================= */
         :root {
-            --bg: #F8FAFC;
-            --surface: rgba(255, 255, 255, 0.9);
-            --surface-solid: #FFFFFF;
-            --border: rgba(15, 23, 42, 0.08);
-            --emerald: #00C177;
-            --emerald-glow: rgba(0, 193, 119, 0.25);
-            --cyan: #00B8D9;
+            --ease-fluid: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-mechanical: cubic-bezier(0.85, 0, 0.15, 1);
+            --ease-diagnostic: steps(10, end);
+            --env-transition: opacity 1.5s var(--ease-fluid), transform 2s var(--ease-fluid);
+        }
+
+        /* --- LIGHT MODE BASE (UI Elements) --- */
+        :root[data-theme="light"] {
+            --surface-1: #FFFFFF; 
+            --surface-2: rgba(241, 245, 249, 0.8);
             --text-main: #0F172A;
-            --text-dim: #64748B;
-            --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+            --text-muted: #64748B;
+            --shadow-sm: 0 4px 15px rgba(0,0,0,0.03); 
+            --shadow-lg: 0 20px 40px rgba(0,0,0,0.05);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        /* --- DARK MODE BASE (UI Elements) --- */
+        :root[data-theme="dark"] {
+            --surface-1: rgba(15, 23, 42, 0.7); 
+            --surface-2: rgba(15, 23, 42, 0.4);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --shadow-sm: 0 4px 15px rgba(0,0,0,0.2); 
+            --shadow-lg: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        /* =========================================
+           ENVIRONMENTAL ENGINE (4-LAYER SYSTEM)
+           ========================================= */
+
+        /* 1. WALMART (Digital Retail Atmosphere) */
+        body[data-portal="walmart"][data-theme="light"] {
+            --bg-base: #F4F7F9; /* Layer 1: Cool white */
+            --env-ambient: radial-gradient(circle at 90% 10%, rgba(0, 113, 206, 0.08) 0%, transparent 50%), radial-gradient(circle at 10% 90%, rgba(0, 113, 206, 0.04) 0%, transparent 40%);
+            --env-geom: rgba(0, 113, 206, 0.04);
+            --border: rgba(0, 113, 206, 0.15); --input-bg: #FFFFFF;
+        }
+        body[data-portal="walmart"][data-theme="dark"] {
+            --bg-base: #040A14; /* Layer 1: Deep Navy */
+            --env-ambient: radial-gradient(circle at 90% 10%, rgba(0, 113, 206, 0.15) 0%, transparent 60%), radial-gradient(circle at 10% 90%, rgba(0, 113, 206, 0.08) 0%, transparent 50%);
+            --env-geom: rgba(0, 113, 206, 0.08);
+            --border: rgba(0, 113, 206, 0.25); --input-bg: rgba(0,0,0,0.2);
+        }
+        body[data-portal="walmart"] {
+            --accent: #0071CE; --accent-glow: rgba(0, 113, 206, 0.25); --accent-spark: #FFC220;
+            --radius-lg: 20px; --radius-md: 12px; --radius-sm: 8px;
+            --font-ui: 'Inter', sans-serif; --btn-weight: 600; --text-transform: none;
+        }
+
+        /* 2. TURN5 (Performance Engineering Environment) */
+        body[data-portal="turn5"][data-theme="light"] {
+            --bg-base: #E2E8F0; /* Layer 1: Steel Gray */
+            --env-ambient: radial-gradient(circle at 50% 0%, rgba(229, 57, 53, 0.03) 0%, transparent 70%);
+            --env-geom: rgba(15, 23, 42, 0.04); --env-ring: rgba(15, 23, 42, 0.08);
+            --border: #CBD5E1; --input-bg: #FFFFFF;
+        }
+        body[data-portal="turn5"][data-theme="dark"] {
+            --bg-base: #050505; /* Layer 1: Pitch Graphite */
+            --env-ambient: radial-gradient(circle at 50% 0%, rgba(229, 57, 53, 0.08) 0%, transparent 70%);
+            --env-geom: rgba(255, 255, 255, 0.03); --env-ring: rgba(255, 255, 255, 0.05);
+            --border: #333333; --input-bg: rgba(0,0,0,0.5);
+        }
+        body[data-portal="turn5"] {
+            --accent: #E53935; --accent-glow: rgba(229, 57, 53, 0.2); --accent-spark: #EF5350;
+            --radius-lg: 0px; --radius-md: 0px; --radius-sm: 0px;
+            --font-ui: 'Inter', sans-serif; --btn-weight: 800; --text-transform: uppercase;
+        }
+
+        /* 3. PARTSGEEK (Automotive Data Matrix) */
+        body[data-portal="partsgeek"][data-theme="light"] {
+            --bg-base: #F0F4F2; /* Layer 1: Technical Paper */
+            --env-ambient: radial-gradient(circle at 50% 50%, rgba(0, 230, 118, 0.04) 0%, transparent 80%);
+            --env-geom: rgba(92, 112, 101, 0.08); --env-glow: rgba(0, 230, 118, 0.08);
+            --border: rgba(0, 230, 118, 0.3); --input-bg: #FFFFFF;
+        }
+        body[data-portal="partsgeek"][data-theme="dark"] {
+            --bg-base: #020A04; /* Layer 1: Deep Forest Matrix */
+            --env-ambient: radial-gradient(circle at 50% 50%, rgba(0, 230, 118, 0.06) 0%, transparent 80%);
+            --env-geom: rgba(0, 230, 118, 0.05); --env-glow: rgba(0, 230, 118, 0.15);
+            --border: rgba(0, 230, 118, 0.2); --input-bg: #000000;
+        }
+        body[data-portal="partsgeek"] {
+            --accent: #00E676; --accent-glow: rgba(0, 230, 118, 0.15); --accent-spark: #69F0AE;
+            --radius-lg: 4px; --radius-md: 2px; --radius-sm: 2px;
+            --font-ui: 'JetBrains Mono', monospace; --btn-weight: 700; --text-transform: none;
+        }
+
+        /* --- GLOBAL BASE --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background-color: var(--bg-base); color: var(--text-main); font-family: var(--font-ui);
+            min-height: 100vh; overflow-x: hidden; transition: background-color 1s ease, color 0.6s ease, font-family 0.4s ease;
+        }
+
+        /* =========================================
+           BACKGROUND PHYSICAL ENVIRONMENTS
+           ========================================= */
+        #origin-environments { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+        .env-layer { position: absolute; inset: 0; opacity: 0; transition: var(--env-transition); transform: scale(1.05); }
         
-        body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; position: relative; }
+        /* Active State Routing */
+        body[data-portal="walmart"] .env-walmart { opacity: 1; transform: scale(1); }
+        body[data-portal="turn5"] .env-turn5 { opacity: 1; transform: scale(1); }
+        body[data-portal="partsgeek"] .env-partsgeek { opacity: 1; transform: scale(1); }
 
-        #cursor-glow {
-            position: fixed; top: 0; left: 0; width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(15, 23, 42, 0.03) 0%, transparent 70%);
-            border-radius: 50%; pointer-events: none; z-index: 9999; will-change: transform;
-        }
+        /* --- WALMART BG --- */
+        .env-walmart .wm-ambient { position: absolute; inset: 0; background: var(--env-ambient); transition: background 1s ease;}
+        .wm-arc { position: absolute; border: 1px solid var(--env-geom); border-radius: 40% 60% 70% 30%; transition: border-color 1s ease;}
+        .wm-arc-1 { width: 120vw; height: 120vw; top: -50vw; left: -20vw; animation: breatheArc 40s infinite alternate ease-in-out; }
+        .wm-arc-2 { width: 80vw; height: 80vw; bottom: -20vw; right: -10vw; animation: breatheArc 30s infinite alternate-reverse ease-in-out; }
+        .wm-spark-field { position: absolute; inset: 0; }
+        .wm-spark { position: absolute; top: 20%; right: 25%; width: 3px; height: 3px; background: var(--accent-spark); box-shadow: 0 0 12px 2px var(--accent-spark); border-radius: 50%; animation: pulseSpark 12s infinite; opacity: 0; }
+        
+        @keyframes breatheArc { 0% { transform: rotate(0deg) scale(1); } 100% { transform: rotate(10deg) scale(1.05); } }
+        @keyframes pulseSpark { 0%, 100% { opacity: 0; transform: translateY(0); } 50% { opacity: 0.8; transform: translateY(-20px); } }
 
-        .ambient-bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 0%, rgba(255,255,255,1) 0%, transparent 80%); }
+        /* --- TURN5 BG --- */
+        .env-turn5 .t5-ambient { position: absolute; inset: 0; background: var(--env-ambient); transition: background 1s ease;}
+        .t5-hatch { position: absolute; inset: 0; background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, var(--env-geom) 10px, var(--env-geom) 11px); transition: opacity 1s; }
+        .t5-ring { position: absolute; top: 50%; left: 50%; width: 90vh; height: 90vh; margin-left: -45vh; margin-top: -45vh; border: 1px dashed var(--env-ring); border-radius: 50%; animation: rotateRing 120s linear infinite; transition: border-color 1s;}
+        .t5-telemetry { position: absolute; top: 30%; left: 0; width: 100vw; height: 1px; background: var(--accent); box-shadow: 0 0 8px var(--accent); opacity: 0; animation: telemetrySweep 15s infinite var(--ease-mechanical); transform-origin: left;}
+        
+        @keyframes rotateRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes telemetrySweep { 0%, 90% { opacity: 0; transform: scaleX(0); } 92% { opacity: 0.5; transform: scaleX(1); } 95% { opacity: 0; transform: scaleX(1) translateX(100px); } 100% { opacity: 0; transform: scaleX(0); } }
 
-        #welcome-sequence {
-            position: fixed; inset: 0; background: var(--emerald); z-index: 5000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 1.5s ease, background 0.5s ease;
-        }
-        .welcome-content { text-align: center; opacity: 0; transform: translateY(20px); transition: all 1s var(--ease-spring); }
-        .w-logo { width: 48px; height: 48px; stroke: var(--emerald); fill: none; stroke-width: 1.5; filter: drop-shadow(0 4px 10px var(--emerald-glow)); margin-bottom: 30px; }
-        .w-title { font-size: 20px; font-weight: 400; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
-        .w-name { font-size: 48px; font-weight: 600; letter-spacing: -1px; color: var(--text-main); }
-        .w-line { width: 0%; height: 1px; background: var(--emerald); margin: 30px auto; box-shadow: 0 0 15px var(--emerald-glow); transition: width 1s var(--ease-spring); }
-        .w-status { font-size: 13px; color: var(--text-dim); letter-spacing: 1px; font-family: monospace; font-weight: 500;}
-        .w-progress { width: 200px; height: 2px; background: rgba(15,23,42,0.05); margin: 20px auto 0; position: relative; overflow: hidden; }
-        .w-bar { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--emerald); }
+        /* --- PARTSGEEK BG --- */
+        .env-partsgeek .pg-ambient { position: absolute; inset: 0; background: var(--env-ambient); transition: background 1s ease;}
+        .pg-grid { position: absolute; inset: 0; background-image: linear-gradient(var(--env-geom) 1px, transparent 1px), linear-gradient(90deg, var(--env-geom) 1px, transparent 1px); background-size: 40px 40px; transition: background 1s; }
+        /* Intelligent Grid Masking (Creates dense/broken areas) */
+        .pg-grid-dense { position: absolute; inset: 0; background-image: linear-gradient(var(--env-geom) 1px, transparent 1px), linear-gradient(90deg, var(--env-geom) 1px, transparent 1px); background-size: 10px 10px; opacity: 0.3; mask-image: radial-gradient(circle at 30% 60%, black 0%, transparent 30%), radial-gradient(circle at 70% 30%, black 0%, transparent 20%); -webkit-mask-image: radial-gradient(circle at 30% 60%, black 0%, transparent 30%), radial-gradient(circle at 70% 30%, black 0%, transparent 20%); }
+        .pg-scan-field { position: absolute; top: -20vh; left: 0; width: 100vw; height: 20vh; background: linear-gradient(to bottom, transparent, var(--env-glow), transparent); animation: diagnosticScan 25s infinite linear; }
+        .pg-node { position: absolute; width: 4px; height: 4px; background: var(--accent); box-shadow: 0 0 10px var(--accent); border-radius: 50%; opacity: 0; animation: blinkNode 8s infinite; }
+        .pg-node.n1 { top: 30%; left: 30%; animation-delay: 2s; }
+        .pg-node.n2 { top: 60%; left: 70%; animation-delay: 5s; }
+        
+        @keyframes diagnosticScan { 0% { transform: translateY(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(140vh); opacity: 0; } }
+        @keyframes blinkNode { 0%, 100% { opacity: 0; } 50% { opacity: 0.8; } }
 
-        #dashboard-view { opacity: 0; transition: opacity 1s ease; padding-top: 80px; }
+        /* =========================================
+           ORIGIN OS UI COMPONENTS (UNTOUCHED LOGIC)
+           ========================================= */
 
+        /* --- NAVBAR --- */
         .nav {
-            position: fixed; top: 0; left: 0; right: 0; height: 72px; background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 1000;
-            transform: translateY(-100%); transition: transform 1s var(--ease-spring); box-shadow: 0 4px 20px rgba(15,23,42,0.02);
+            position: fixed; top: 0; left: 0; right: 0; height: 72px;
+            background: var(--surface-1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px; z-index: 1000; box-shadow: var(--shadow-sm); transition: all 0.6s ease;
         }
-        .nav-brand { display: flex; align-items: center; gap: 16px; }
-        .nav-brand svg { width: 24px; height: 24px; stroke: var(--emerald); fill: none; stroke-width: 2; filter: drop-shadow(0 2px 4px var(--emerald-glow)); }
-        .nav-title { font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
-        .nav-user { display: flex; align-items: center; gap: 24px; }
-        .nav-badge { background: var(--surface-solid); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--text-main); display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(15,23,42,0.02); }
-        .nav-badge i { width: 6px; height: 6px; background: var(--emerald); border-radius: 50%; box-shadow: 0 0 6px var(--emerald); }
-        .logout-btn { color: var(--text-dim); font-weight: 500; text-decoration: none; font-size: 13px; transition: color 0.3s; }
-        .logout-btn:hover { color: var(--emerald); }
-
-        .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
-        .anim-up { opacity: 0; transform: translateY(30px); transition: all 1s var(--ease-spring); }
-
-        .header-area { margin-bottom: 40px; }
-        .header-area h1 { font-size: 40px; font-weight: 600; letter-spacing: -1px; margin-bottom: 10px; color: var(--text-main); }
-        .header-area p { color: var(--text-dim); font-size: 15px; font-weight: 500; }
-
-        .workspace-grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 40px; }
+        .nav-logo { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 16px; letter-spacing: 3px; font-family: 'Inter', sans-serif;}
+        .nav-logo i { color: var(--accent); font-size: 20px; transition: color 0.6s; }
         
-        .glass-card {
-            background: var(--surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.8); border-radius: 20px; padding: 32px;
-            box-shadow: 0 20px 50px rgba(15,23,42,0.04), inset 0 2px 4px rgba(255,255,255,1); position: relative; transition: all 0.4s var(--ease-spring);
+        .nav-actions { display: flex; align-items: center; gap: 24px; font-family: 'Inter', sans-serif; }
+        .theme-btn { 
+            background: transparent; border: 1px solid var(--border); color: var(--text-main); 
+            width: 38px; height: 38px; border-radius: var(--radius-lg); cursor: pointer; transition: all 0.4s; 
+            display: flex; align-items: center; justify-content: center; font-size: 15px;
         }
-        .glass-card:hover { border-color: rgba(0,193,119,0.2); box-shadow: 0 25px 60px rgba(15,23,42,0.06); transform: translateY(-2px); }
+        .theme-btn:hover { border-color: var(--accent); color: var(--accent); transform: rotate(15deg); }
+        
+        .user-badge { background: var(--surface-2); border: 1px solid var(--border); padding: 8px 16px; border-radius: var(--radius-lg); font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 8px; letter-spacing: 1px; transition: all 0.6s;}
+        .user-badge span { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); transition: background 0.6s;}
+        .logout { color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.3s; }
+        .logout:hover { color: var(--accent); }
 
+        /* --- PORTAL SELECTOR --- */
+        .portal-nav { display: flex; justify-content: center; gap: 16px; margin: 110px auto 40px; padding: 0 20px; position: relative; z-index: 10; font-family: 'Inter', sans-serif; }
+        .portal-tab {
+            background: var(--surface-1); border: 1px solid var(--border); color: var(--text-muted);
+            padding: 14px 28px; border-radius: 12px; font-size: 13px; font-weight: 700; letter-spacing: 1px;
+            cursor: pointer; transition: all 0.4s var(--ease-fluid); display: flex; align-items: center; gap: 10px;
+            box-shadow: var(--shadow-sm); backdrop-filter: blur(12px);
+        }
+        .portal-tab i { font-size: 18px; transition: 0.4s; }
+        .portal-tab:hover { border-color: var(--text-muted); transform: translateY(-2px); color: var(--text-main); }
+        .portal-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 8px 25px var(--accent-glow); pointer-events: none;}
+        .portal-tab.active i { color: #fff; }
+
+        /* --- WORKSPACE LAYOUT --- */
+        .workspace { max-width: 1200px; margin: 0 auto 60px; padding: 0 20px; position: relative; z-index: 10; }
+        
+        .header { margin-bottom: 24px; }
+        .header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; transition: color 0.4s;}
+        .header p { color: var(--text-muted); font-size: 14px; font-weight: 500; font-family: 'Inter', sans-serif;}
+        
+        /* Cards */
+        .card { 
+            background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-lg); 
+            padding: 32px; box-shadow: var(--shadow-lg); transition: all 0.6s ease; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        }
+        
+        /* Editor */
+        .editor-wrap { position: relative; margin-bottom: 24px; }
         .editor {
-            width: 100%; height: 200px; background: #F1F5F9; border: 1px solid var(--border);
-            border-radius: 12px; padding: 24px; color: var(--text-main); font-family: 'SF Mono', Consolas, monospace;
-            font-size: 14px; line-height: 1.6; resize: none; outline: none; transition: 0.3s;
-            box-shadow: inset 0 2px 4px rgba(15,23,42,0.02);
+            width: 100%; height: 220px; background: var(--input-bg); border: 1px solid var(--border);
+            border-radius: var(--radius-md); padding: 24px; color: var(--text-main); font-family: 'JetBrains Mono', monospace;
+            font-size: 13px; resize: none; outline: none; transition: all 0.4s; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+            line-height: 1.6;
         }
-        .editor:focus { border-color: var(--emerald); box-shadow: 0 0 0 3px var(--emerald-glow), inset 0 2px 4px rgba(15,23,42,0.02); }
-        .editor::placeholder { color: #94A3B8; font-weight: 500; }
-
-        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
-        .data-meta { font-size: 12px; color: var(--text-dim); font-family: monospace; font-weight: 600; }
+        .editor:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow), inset 0 2px 10px rgba(0,0,0,0.02); }
         
-        .btn-run {
-            background: var(--text-main); border: none; border-radius: 12px;
-            padding: 0 32px; height: 50px; color: #fff; font-size: 14px; font-weight: 600;
-            display: flex; align-items: center; gap: 12px; transition: all 0.3s var(--ease-spring);
-            position: relative; overflow: hidden; box-shadow: 0 8px 20px rgba(15,23,42,0.15); cursor: pointer;
+        body[data-portal="partsgeek"] .editor { color: var(--accent-spark); font-weight: 500; }
+        body[data-portal="partsgeek"] .editor::placeholder { color: var(--accent-glow); }
+        body[data-portal="partsgeek"] .editor:focus { border-color: var(--accent-spark); box-shadow: 0 0 20px var(--accent-glow); }
+
+        /* Controls */
+        .controls { display: flex; justify-content: space-between; align-items: center; }
+        .meta-data { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase;}
+        .meta-data span { color: var(--accent); font-size: 13px; }
+        .btn-group { display: flex; gap: 16px; }
+        
+        .btn { 
+            padding: 0 24px; height: 46px; border-radius: var(--radius-md); font-size: 13px; font-weight: var(--btn-weight); text-transform: var(--text-transform);
+            cursor: pointer; transition: all 0.4s var(--ease-fluid); border: none; display: flex; align-items: center; gap: 10px; 
+            font-family: var(--font-ui); letter-spacing: 0.5px;
         }
-        .btn-run::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transform: translateX(-100%); transition: 0.5s; }
-        .btn-run:hover { background: var(--emerald); box-shadow: 0 12px 25px var(--emerald-glow); transform: translateY(-2px); }
-        .btn-run:hover::before { transform: translateX(100%); }
-        .btn-run:active { transform: translateY(1px) scale(0.97); }
-
-        .btn-upload {
-            background: var(--surface-solid); border: 1px solid var(--border); border-radius: 12px;
-            padding: 0 24px; height: 50px; color: var(--text-main); font-size: 14px; font-weight: 600;
-            display: flex; align-items: center; gap: 10px; transition: all 0.3s var(--ease-spring);
-            cursor: pointer; box-shadow: 0 4px 12px rgba(15,23,42,0.02);
-        }
-        .btn-upload:hover { border-color: var(--cyan); color: var(--cyan); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,184,217,0.15); }
-        .btn-upload:active { transform: translateY(1px) scale(0.97); }
-
-        .liquid-progress-container { display: none; width: 100%; height: 50px; border-radius: 12px; background: #E2E8F0; border: 1px solid var(--border); position: relative; overflow: hidden; }
-        .liquid-fill { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #00C177, #00B8D9); transition: width 0.3s linear, background 0.3s; }
-        .liquid-glow { position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: liquidSweep 1.5s infinite; }
-        .progress-text-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; letter-spacing: 1px; color: #fff; z-index: 10; text-shadow: 0 1px 2px rgba(15,23,42,0.2); }
-        @keyframes liquidSweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-
-        .results-section { display: none; }
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-        .stat-box { background: var(--surface-solid); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: 0.3s; box-shadow: 0 4px 12px rgba(15,23,42,0.02); }
-        .stat-box:hover { border-color: rgba(15,23,42,0.15); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(15,23,42,0.04); }
-        .s-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; font-weight: 600; letter-spacing: 1px; margin-bottom: 8px; }
-        .s-val { font-size: 32px; font-weight: 600; display: flex; align-items: baseline; gap: 8px; color: var(--text-main); letter-spacing: -0.5px; }
-        .s-trend { font-size: 14px; color: var(--emerald); }
-
-        .tabs { display: flex; gap: 32px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
-        .tab { font-size: 13px; font-weight: 600; color: var(--text-dim); padding-bottom: 12px; position: relative; transition: 0.3s; cursor: pointer; }
-        .tab:hover { color: var(--text-main); }
-        .tab.active { color: var(--text-main); }
-        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: var(--emerald); border-radius: 2px; }
-
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { text-align: left; padding: 16px; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
-        td { padding: 16px; border-bottom: 1px solid rgba(15,23,42,0.04); transition: 0.2s; font-weight: 500; }
-        tr:hover td { background: #F8FAFC; }
-        .mono { font-family: 'SF Mono', Consolas, monospace; color: var(--text-main); font-weight: 600; }
+        .btn-secondary { background: var(--surface-2); color: var(--text-main); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
         
-        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-        .st-ok { background: rgba(0,193,119,0.1); color: #00A364; border: 1px solid rgba(0,193,119,0.2); }
-        .st-warn { background: #FEF3C7; color: #D97706; border: 1px solid #FDE68A; }
-        .st-err { background: #FEE2E2; color: #DC2626; border: 1px solid #FECACA; }
+        .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 6px 20px var(--accent-glow); position: relative; overflow: hidden; }
+        .btn-primary::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent); transition: 0.5s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px var(--accent-glow); filter: brightness(1.05);}
+        .btn-primary:hover::after { left: 150%; }
+
+        /* PartsGeek Button Override */
+        body[data-portal="partsgeek"] .btn { position: relative; }
+        body[data-portal="partsgeek"] .btn-primary::before { content: '['; margin-right: 4px; opacity: 0.5; }
+        body[data-portal="partsgeek"] .btn-primary::after { content: ']'; margin-left: 4px; opacity: 0.5; position: static; background: none; }
+        body[data-portal="partsgeek"] .btn-primary:hover::before, body[data-portal="partsgeek"] .btn-primary:hover::after { opacity: 1; color: #fff;}
+
+        /* Loader */
+        .loader-wrap { display: none; margin-top: 30px; animation: fadeUp 0.4s ease forwards; }
+        .loader { height: 4px; background: var(--surface-2); border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
+        .loader-bar { height: 100%; width: 0%; background: var(--accent); transition: width 0.2s linear; box-shadow: 0 0 10px var(--accent); }
+        .loader-text { margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); font-weight: 700; text-align: right; letter-spacing: 1px; }
+
+        body[data-portal="turn5"] .loader { height: 8px; border-radius: 0; background: #111; border-color: #333;}
+        body[data-portal="turn5"] .loader-bar { background: repeating-linear-gradient(45deg, var(--accent), var(--accent) 10px, var(--accent-spark) 10px, var(--accent-spark) 20px); }
+
+        /* --- RESULTS AREA --- */
+        .results-container { display: none; margin-top: 40px; animation: fadeUp 0.6s var(--ease-fluid) forwards; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
+        .stat-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm); transition: 0.4s; backdrop-filter: blur(12px);}
+        .stat-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+        .s-title { font-size: 11px; color: var(--text-muted); font-weight: 800; margin-bottom: 12px; letter-spacing: 1px; text-transform: uppercase; font-family: 'Inter', sans-serif; }
+        .s-val { font-size: 32px; font-weight: 800; color: var(--text-main); display: flex; align-items: baseline; gap: 4px; line-height: 1;}
+
+        /* Data Tables */
+        .data-nav { display: flex; gap: 32px; border-bottom: 2px solid var(--border); margin-bottom: 24px; padding: 0 10px; font-family: 'Inter', sans-serif;}
+        .d-tab { font-size: 13px; font-weight: 700; color: var(--text-muted); padding-bottom: 16px; cursor: pointer; transition: 0.3s; position: relative; text-transform: uppercase; letter-spacing: 0.5px;}
+        .d-tab:hover { color: var(--text-main); }
+        .d-tab.active { color: var(--accent); }
+        .d-tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background: var(--accent); border-radius: 2px; box-shadow: 0 -2px 10px var(--accent-glow); }
+
+        .table-wrap { overflow-x: auto; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
+        th { padding: 16px 24px; font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); white-space: nowrap; font-family: 'Inter', sans-serif; }
+        td { padding: 18px 24px; font-size: 13px; font-weight: 500; border-bottom: 1px solid var(--border); transition: background 0.2s; }
+        tr:hover td { background: var(--surface-2); }
         
-        .copy-act { opacity: 0; font-size: 13px; color: var(--text-dim); margin-left: 8px; transition: 0.2s; cursor: pointer; }
-        tr:hover .copy-act { opacity: 1; }
-        .copy-act:hover { color: var(--emerald); transform: scale(1.2); }
+        .mono { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+        
+        /* Split Order UI */
+        .split-parent td { background: var(--accent-glow); font-weight: 800; color: var(--accent); border-bottom: none; border-top: 1px solid var(--border); border-radius: var(--radius-sm) var(--radius-sm) 0 0;}
+        .split-child td { border-left: 3px solid var(--accent); padding-left: 32px; background: var(--input-bg); }
+        .split-child:last-child td { border-bottom: 1px solid var(--border); border-radius: 0 0 var(--radius-sm) 0;}
+
+        /* Status Badges */
+        .badge-st { padding: 6px 12px; border-radius: var(--radius-sm); font-size: 10px; font-weight: 800; letter-spacing: 0.5px; font-family: 'Inter', sans-serif; text-transform: uppercase;}
+        .st-ok { background: rgba(0, 193, 119, 0.15); color: #00C177; border: 1px solid rgba(0,193,119,0.3); }
+        .st-warn { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .st-err { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .copy-btn { opacity: 0; color: var(--text-muted); cursor: pointer; transition: 0.2s; margin-left: 10px; font-size: 14px; }
+        tr:hover .copy-btn, .split-parent:hover .copy-btn { opacity: 1; }
+        .copy-btn:hover { color: var(--accent); transform: scale(1.2); }
 
         .btn-copy-col {
-            background: #F1F5F9; border: 1px solid var(--border); color: var(--text-dim);
-            font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 6px; margin-left: 10px; cursor: pointer; transition: 0.2s;
+            background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+            font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: var(--radius-sm); margin-left: 12px; cursor: pointer; transition: 0.3s;
         }
-        .btn-copy-col:hover { background: var(--emerald); color: #fff; border-color: var(--emerald); }
+        .btn-copy-col:hover { background: var(--surface-2); color: var(--accent); border-color: var(--accent); }
+        .btn-copy-col.copied { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-        .signature { position: fixed; bottom: 32px; right: 40px; display: flex; flex-direction: column; align-items: flex-end; z-index: 100; opacity: 0; transition: opacity 1s var(--ease-spring); }
-        .sig-line { width: 120px; height: 1px; background: rgba(15,23,42,0.1); margin-bottom: 8px; position: relative; overflow: hidden; transition: 0.3s; }
-        .sig-line::after { content: ''; position: absolute; top: 0; left: 0; width: 10px; height: 100%; background: var(--emerald); box-shadow: 0 0 10px var(--emerald); animation: sweepLight 20s infinite; }
-        @keyframes sweepLight { 0%, 95% { transform: translateX(-20px); opacity: 0; } 98% { opacity: 1; } 100% { transform: translateX(150px); opacity: 0; } }
-        .sig-text { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 6px; font-weight: 600;}
-        .sig-name { font-family: 'Caveat', cursive; font-size: 20px; color: var(--text-main); text-transform: none; letter-spacing: 0; transition: 0.3s; font-weight: 600; }
-        .signature:hover .sig-name { color: var(--emerald); }
-        .signature:hover .sig-line { background: rgba(0,193,119,0.3); }
+        /* =========================================
+           TRANSITION ENGINE (THE WOW FACTOR)
+           ========================================= */
+        #portal-transit { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden;}
+        
+        .t-walmart { position: absolute; top: 0; bottom: 0; right: 0; width: 0vw; background: #0071CE; transition: width 0.6s var(--ease-fluid); }
+        .t-walmart::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #FFC220; box-shadow: 0 0 20px #FFC220; }
+        .t-walmart.active { width: 100vw; left: 0; right: auto; }
+        
+        .t-turn5-top, .t-turn5-bot { position: absolute; width: 100vw; height: 50vh; background: #111; transition: transform 0.4s var(--ease-mechanical); z-index: 2;}
+        .t-turn5-top { top: 0; transform: translateY(-100%); border-bottom: 2px solid #333; }
+        .t-turn5-bot { bottom: 0; transform: translateY(100%); border-top: 2px solid #333; }
+        .t-turn5-laser { position: absolute; top: 50%; left: 0; width: 100vw; height: 4px; background: #E53935; box-shadow: 0 0 30px #E53935, 0 0 60px #E53935; transform: translateY(-50%) scaleX(0); z-index: 3; transition: transform 0.3s ease; transform-origin: center;}
+        .t-turn5-top.active, .t-turn5-bot.active { transform: translateY(0); }
+        .t-turn5-laser.active { transform: translateY(-50%) scaleX(1); }
+        
+        .t-pg-overlay { position: absolute; inset: 0; background: rgba(2, 10, 4, 0.9); backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s; z-index: 1;}
+        .t-pg-scan { position: absolute; top: -10px; left: 0; width: 100vw; height: 3px; background: #00E676; box-shadow: 0 0 20px #00E676, 0 0 40px #00E676; opacity: 0; z-index: 2;}
+        .t-pg-overlay.active { opacity: 1; }
+        .t-pg-scan.active { opacity: 1; animation: scanDown 0.6s linear forwards; }
+        @keyframes scanDown { 0% { top: -10px; } 100% { top: 100vh; } }
 
+        /* Animation Staggers */
+        .stagger-1 { opacity: 0; transform: translateY(20px); transition: all 0.6s var(--ease-fluid) 0.1s; }
+        .stagger-2 { opacity: 0; transform: translateY(20px); transition: all 0.6s var(--ease-fluid) 0.2s; }
+        .stagger-3 { opacity: 0; transform: translateY(20px); transition: all 0.6s var(--ease-fluid) 0.3s; }
+        .stagger-in { opacity: 1; transform: translateY(0); }
     </style>
 </head>
-<body>
+<body data-theme="light" data-portal="walmart">
 
-    <div id="cursor-glow"></div>
-    <div class="ambient-bg"></div>
+    <!-- 4-LAYER ENVIRONMENTAL ENGINE -->
+    <div id="origin-environments">
+        <!-- Walmart -->
+        <div class="env-layer env-walmart">
+            <div class="wm-ambient"></div>
+            <div class="wm-geometry">
+                <div class="wm-arc wm-arc-1"></div>
+                <div class="wm-arc wm-arc-2"></div>
+            </div>
+            <div class="wm-spark-field"><div class="wm-spark"></div></div>
+        </div>
 
-    <div id="welcome-sequence">
-        <div class="welcome-content" id="w-content">
-            <svg class="w-logo" viewBox="0 0 100 100">
-                <polygon points="50 15, 85 35, 85 65, 50 85, 15 65, 15 35" />
-                <circle cx="50" cy="50" r="10" />
-            </svg>
-            <div class="w-title">Welcome</div>
-            <div class="w-name">{{ username }}</div>
-            <div class="w-line" id="w-line"></div>
-            <div class="w-status" id="w-status">Preparing your workspace...</div>
-            <div class="w-progress"><div class="w-bar" id="w-bar"></div></div>
+        <!-- Turn5 -->
+        <div class="env-layer env-turn5">
+            <div class="t5-ambient"></div>
+            <div class="t5-geometry"><div class="t5-hatch"></div></div>
+            <div class="t5-mechanical-ring"><div class="t5-ring"></div></div>
+            <div class="t5-telemetry-layer"><div class="t5-telemetry"></div></div>
+        </div>
+
+        <!-- PartsGeek -->
+        <div class="env-layer env-partsgeek">
+            <div class="pg-ambient"></div>
+            <div class="pg-grid-base"><div class="pg-grid"></div></div>
+            <div class="pg-grid-intelligent"><div class="pg-grid-dense"></div></div>
+            <div class="pg-data-nodes">
+                <div class="pg-node n1"></div>
+                <div class="pg-node n2"></div>
+            </div>
+            <div class="pg-scanner"><div class="pg-scan-field"></div></div>
         </div>
     </div>
 
-    <div id="dashboard-view">
-        <nav class="nav" id="main-nav">
-            <div class="nav-brand">
-                <svg viewBox="0 0 100 100"><polygon points="50 15, 85 35, 85 65, 50 85, 15 65, 15 35"/><circle cx="50" cy="50" r="10"/></svg>
-                <span class="nav-title">ORIGIN</span>
-            </div>
-            <div class="nav-user">
-                <div class="nav-badge"><i></i> {{ company }} Secure</div>
-                <a href="/logout" class="logout-btn">End Session</a>
-            </div>
-        </nav>
+    <!-- TRANSITION OVERLAYS -->
+    <div id="portal-transit">
+        <div id="t-walmart" class="t-walmart"></div>
+        <div id="t-turn5-top" class="t-turn5-top"></div>
+        <div id="t-turn5-bot" class="t-turn5-bot"></div>
+        <div id="t-turn5-laser" class="t-turn5-laser"></div>
+        <div id="t-pg-overlay" class="t-pg-overlay"></div>
+        <div id="t-pg-scan" class="t-pg-scan"></div>
+    </div>
 
-        <div class="container">
-            <div class="header-area anim-up">
-                <h1>Extraction Engine</h1>
-                <p>Initialize bulk processing pipeline. Awaiting payload.</p>
-            </div>
+    <!-- ORIGIN OS NAVBAR -->
+    <nav class="nav">
+        <div class="nav-logo"><i class="bi bi-box-seam-fill"></i> ORIGIN</div>
+        <div class="nav-actions">
+            <button class="theme-btn" onclick="toggleTheme()" title="Toggle Interface Mode">
+                <i id="theme-icon" class="bi bi-sun-fill"></i>
+            </button>
+            <div class="user-badge"><span></span> {{ company }} System</div>
+            <a href="/logout" class="logout">Terminate</a>
+        </div>
+    </nav>
 
-            <div class="workspace-grid">
-                <div class="glass-card anim-up" style="transition-delay: 0.1s;">
-                    <textarea id="orders" class="editor" placeholder="> Paste identifiers block here..." oninput="updateByteCount()"></textarea>
-                    
-                    <div class="action-bar" id="actionBar">
-                        <div class="data-meta">Payload: <span id="dataSize">0</span> Bytes | Nodes: <span id="nodeCount">0</span></div>
-                        <div style="display:flex; gap:12px;">
-                            <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleExcelUpload(event)">
-                            <button class="btn-upload" onclick="document.getElementById('excelFile').click()">
-                                <i class="bi bi-file-earmark-spreadsheet"></i> Upload Excel
-                            </button>
-                            <button class="btn-run" onclick="executeSequence()">
-                                <i class="bi bi-cpu"></i> Execute Sequence
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="liquid-progress-container" id="progressUI">
-                        <div class="liquid-fill" id="liquidFill"></div>
-                        <div class="liquid-glow"></div>
-                        <div class="progress-text-overlay" id="progressText">Synthesizing data stream...</div>
-                    </div>
-                </div>
-
-                <div class="results-section" id="resultsSection">
-                    <div class="stats-grid anim-up">
-                        <div class="stat-box"><div class="s-label">Total Processed</div><div class="s-val" id="stTotal">0</div></div>
-                        <div class="stat-box"><div class="s-label">Verified</div><div class="s-val"><span id="stSuccess">0</span><span class="s-trend"><i class="bi bi-check-all"></i></span></div></div>
-                        <div class="stat-box"><div class="s-label">Anomalies</div><div class="s-val"><span id="stFailed" style="color:#D97706;">0</span></div></div>
-                        <div class="stat-box"><div class="s-label">Latency</div><div class="s-val"><span id="stTime">0.00</span><span style="font-size:14px; color:var(--text-dim); margin-left:2px;">s</span></div></div>
-                    </div>
-
-                    <div class="glass-card anim-up" style="transition-delay: 0.1s;">
-                        <div class="tabs">
-                            <div class="tab active" onclick="switchTab('shipped', this)">Verified (<span id="countShipped">0</span>)</div>
-                            <div class="tab" onclick="switchTab('notracking', this)">Processing (<span id="countNoTrk">0</span>)</div>
-                            <div class="tab" onclick="switchTab('notfound', this)">Anomalies (<span id="countErr">0</span>)</div>
-                        </div>
-
-                        <div class="table-wrap">
-                            <table id="tbl-shipped">
-                                <thead>
-                                    <tr>
-                                        <th>PO # <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 0, this)"><i class="bi bi-files"></i> Copy</button></th>
-                                        <th>Cust Order # <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 1, this)"><i class="bi bi-files"></i> Copy</button></th>
-                                        <th>Ship From</th>
-                                        <th>Created Date</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="bd-shipped"></tbody>
-                            </table>
-                            <table id="tbl-notracking" style="display:none;">
-                                <thead>
-                                    <tr>
-                                        <th>Identifier <button class="btn-copy-col" onclick="copyColumn('bd-notracking', 0, this)"><i class="bi bi-files"></i> Copy All</button></th>
-                                        <th>Status</th>
-                                        <th>System Log</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="bd-notracking"></tbody>
-                            </table>
-                            <table id="tbl-notfound" style="display:none;">
-                                <thead>
-                                    <tr>
-                                        <th>Identifier <button class="btn-copy-col" onclick="copyColumn('bd-notfound', 0, this)"><i class="bi bi-files"></i> Copy All</button></th>
-                                        <th>System Log</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="bd-notfound"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- PORTAL SELECTOR -->
+    <div class="portal-nav stagger-1">
+        <div class="portal-tab active" onclick="switchPortal('walmart', this)">
+            <i class="bi bi-shop"></i> WALMART
+        </div>
+        <div class="portal-tab" onclick="switchPortal('turn5', this)">
+            <i class="bi bi-cone-striped"></i> TURN5
+        </div>
+        <div class="portal-tab" onclick="switchPortal('partsgeek', this)">
+            <i class="bi bi-cpu"></i> PARTSGEEK
         </div>
     </div>
 
-    <div class="signature" id="signature">
-        <div class="sig-line"></div>
-        <div class="sig-text">Crafted by <span class="sig-name">Fares</span></div>
+    <!-- WORKSPACE -->
+    <div class="workspace">
+        <div class="header stagger-2" id="ws-header">
+            <h1>Walmart Retail Operations</h1>
+            <p>Standard fulfillment pipeline. Awaiting identifier payload.</p>
+        </div>
+
+        <div class="card stagger-3" id="input-module">
+            <div class="editor-wrap">
+                <textarea id="orders" class="editor" placeholder="> Awaiting Walmart identifiers..." oninput="updateStats()"></textarea>
+            </div>
+            
+            <div class="controls" id="controls">
+                <div class="meta-data">SYS_NODES: <span id="node-count">0</span></div>
+                <div class="btn-group">
+                    <input type="file" id="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleExcel(event)">
+                    <button class="btn btn-secondary" id="btn-upload" onclick="document.getElementById('file').click()">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Upload Matrix
+                    </button>
+                    <button class="btn btn-primary" onclick="execute()">
+                        <i class="bi bi-lightning-charge-fill"></i> Execute Sequence
+                    </button>
+                </div>
+            </div>
+
+            <div class="loader-wrap" id="loader-wrap">
+                <div class="loader"><div class="loader-bar" id="loader-bar"></div></div>
+                <div class="loader-text" id="loader-txt">PROCESSING ORDERS...</div>
+            </div>
+        </div>
+
+        <!-- RESULTS -->
+        <div class="results-container" id="results">
+            <div class="stats-grid">
+                <div class="stat-card"><div class="s-title">Nodes Scanned</div><div class="s-val" id="st-tot">0</div></div>
+                <div class="stat-card"><div class="s-title">Routing OK</div><div class="s-val" style="color:#00C177" id="st-ok">0</div></div>
+                <div class="stat-card"><div class="s-title">Missing Track</div><div class="s-val" style="color:#F59E0B" id="st-warn">0</div></div>
+                <div class="stat-card"><div class="s-title">Null Entity</div><div class="s-val" style="color:#EF4444" id="st-err">0</div></div>
+            </div>
+
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <div class="data-nav">
+                    <div class="d-tab active" onclick="setTab('shipped', this)">Dispatched (<span id="tOk">0</span>)</div>
+                    <div class="d-tab" onclick="setTab('notracking', this)">Pending Trace (<span id="tWarn">0</span>)</div>
+                    <div class="d-tab" onclick="setTab('notfound', this)">Null Records (<span id="tErr">0</span>)</div>
+                </div>
+                
+                <div class="table-wrap">
+                    <table id="tbl-shipped">
+                        <thead><tr>
+                            <th>Origin PO <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 0, this)"><i class="bi bi-files"></i></button></th>
+                            <th>Deposco SO <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 1, this)"><i class="bi bi-files"></i></button></th>
+                            <th>Facility</th>
+                            <th>Timestamp</th>
+                            <th>Tracking Route <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 4, this)"><i class="bi bi-files"></i></button></th>
+                            <th>Status</th>
+                        </tr></thead>
+                        <tbody id="bd-shipped"></tbody>
+                    </table>
+                    <table id="tbl-notracking" style="display:none;">
+                        <thead><tr><th>Origin PO</th><th>Deposco SO</th><th>System Log</th></tr></thead>
+                        <tbody id="bd-notracking"></tbody>
+                    </table>
+                    <table id="tbl-notfound" style="display:none;">
+                        <thead><tr><th>Origin PO</th><th>System Log</th></tr></thead>
+                        <tbody id="bd-notfound"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
-        const cursorGlow = document.getElementById('cursor-glow');
-        let mouseX = window.innerWidth / 2;
-        let mouseY = window.innerHeight / 2;
-        let glowX = mouseX;
-        let glowY = mouseY;
+        // --- Init Stagger Animations ---
+        setTimeout(() => {
+            document.querySelectorAll('.stagger-1, .stagger-2, .stagger-3').forEach(el => el.classList.add('stagger-in'));
+        }, 50);
 
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-        });
-
-        function animateGlow() {
-            glowX += (mouseX - glowX) * 0.15;
-            glowY += (mouseY - glowY) * 0.15;
-            cursorGlow.style.transform = `translate3d(${glowX}px, ${glowY}px, 0) translate(-50%, -50%)`;
-            requestAnimationFrame(animateGlow);
-        }
-        animateGlow();
-
-        document.querySelectorAll('.btn-run, .tab, .logout-btn, .copy-act, .btn-copy-col').forEach(el => {
-            el.addEventListener('mouseenter', () => { cursorGlow.style.background = 'radial-gradient(circle, rgba(0,193,119,0.1) 0%, transparent 70%)'; });
-            el.addEventListener('mouseleave', () => { cursorGlow.style.background = 'radial-gradient(circle, rgba(15,23,42,0.03) 0%, transparent 70%)'; });
-        });
-
-        window.onload = () => {
-            setTimeout(() => { document.getElementById('welcome-sequence').style.background = 'var(--bg)'; }, 50);
+        // --- Theme Engine ---
+        function toggleTheme() {
+            const current = document.body.getAttribute('data-theme') || 'light';
+            const target = current === 'dark' ? 'light' : 'dark';
             
+            document.documentElement.setAttribute('data-theme', target);
+            document.body.setAttribute('data-theme', target);
+            localStorage.setItem('theme', target);
+            
+            const icon = document.getElementById('theme-icon');
+            icon.style.transform = 'rotate(180deg) scale(0)';
             setTimeout(() => {
-                document.getElementById('w-content').style.opacity = '1';
-                document.getElementById('w-content').style.transform = 'translateY(0)';
-                
-                setTimeout(() => { document.getElementById('w-line').style.width = '100%'; }, 500);
-                setTimeout(() => { document.getElementById('w-bar').style.width = '100%'; document.getElementById('w-bar').style.transition = 'width 1s linear'; }, 800);
-                
-                setTimeout(() => {
-                    document.getElementById('welcome-sequence').style.opacity = '0';
-                    setTimeout(() => {
-                        document.getElementById('welcome-sequence').style.display = 'none';
-                        document.getElementById('dashboard-view').style.opacity = '1';
-                        
-                        document.getElementById('main-nav').style.transform = 'translateY(0)';
-                        
-                        document.querySelectorAll('.anim-up').forEach((el, i) => {
-                            setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }, i * 150);
-                        });
+                icon.className = target === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+                icon.style.transform = 'rotate(0deg) scale(1)';
+            }, 150);
+        }
+        
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.body.setAttribute('data-theme', savedTheme);
+        document.getElementById('theme-icon').className = savedTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
 
-                        setTimeout(() => { document.getElementById('signature').style.opacity = '1'; }, 1000);
-                    }, 1000);
-                }, 2200);
-            }, 300);
-        };
-
-        function updateByteCount() {
-            const val = document.getElementById('orders').value;
-            const lines = val.split(/\n/).filter(l => l.trim()).length;
-            document.getElementById('dataSize').innerText = new Blob([val]).size;
-            document.getElementById('nodeCount').innerText = lines;
+        // --- Kinematic Portal Transition Engine ---
+        let currentPortal = 'walmart';
+        
+        async function switchPortal(portal, el) {
+            if(currentPortal === portal) return;
             
-            if(lines > 0) {
-                document.getElementById('orders').style.borderColor = 'rgba(0,193,119,0.6)';
-                setTimeout(() => document.getElementById('orders').style.borderColor = 'var(--border)', 300);
+            // 1. Fire Transit Animation
+            if(portal === 'walmart') {
+                document.getElementById('t-walmart').classList.add('active');
+            } else if(portal === 'turn5') {
+                document.getElementById('t-turn5-top').classList.add('active');
+                document.getElementById('t-turn5-bot').classList.add('active');
+                setTimeout(() => document.getElementById('t-turn5-laser').classList.add('active'), 350);
+            } else if(portal === 'partsgeek') {
+                document.getElementById('t-pg-overlay').classList.add('active');
+                document.getElementById('t-pg-scan').classList.add('active');
             }
+
+            // 2. Hide Content
+            document.querySelectorAll('.stagger-in').forEach(el => el.classList.remove('stagger-in'));
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('orders').value = '';
+            updateStats();
+
+            await new Promise(r => setTimeout(r, 600)); // Wait for screen cover
+
+            // 3. Swap State
+            currentPortal = portal;
+            document.querySelectorAll('.portal-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            document.body.setAttribute('data-portal', portal);
+
+            // 4. Update UI Text
+            const hd = document.getElementById('ws-header');
+            const ed = document.getElementById('orders');
+            const up = document.getElementById('btn-upload');
+            const lTxt = document.getElementById('loader-txt');
+
+            if(portal === 'walmart') {
+                hd.innerHTML = `<h1>Walmart Retail Operations</h1><p>Standard fulfillment pipeline. Awaiting identifier payload.</p>`;
+                ed.placeholder = "> Awaiting Walmart identifiers..."; up.style.display = 'flex'; lTxt.innerText = "PROCESSING ORDERS...";
+            } else if(portal === 'turn5') {
+                hd.innerHTML = `<h1>Turn5 Logistics Control</h1><p>Automotive freight and LTL routing module.</p>`;
+                ed.placeholder = "> Awaiting Turn5 identifiers..."; up.style.display = 'flex'; lTxt.innerText = "PROCESSING LOGISTICS...";
+            } else if(portal === 'partsgeek') {
+                hd.innerHTML = `<h1>PartsGeek Diagnostic Terminal</h1><p>Legacy catalog parsing and data extraction enabled.</p>`;
+                ed.placeholder = "root@origin:~$ PASTE RAW TABLE DATA\nScanning for [PG1...] strings..."; up.style.display = 'none'; lTxt.innerText = "SCANNING DATA STREAM...";
+            }
+
+            // 5. Retract Overlays
+            if(portal === 'walmart') {
+                document.getElementById('t-walmart').style.left = '0';
+                document.getElementById('t-walmart').style.width = '0vw';
+                setTimeout(() => { document.getElementById('t-walmart').classList.remove('active'); document.getElementById('t-walmart').style.left = ''; document.getElementById('t-walmart').style.right = '0'; }, 600);
+            } else if(portal === 'turn5') {
+                document.getElementById('t-turn5-laser').classList.remove('active');
+                setTimeout(() => {
+                    document.getElementById('t-turn5-top').classList.remove('active');
+                    document.getElementById('t-turn5-bot').classList.remove('active');
+                }, 200);
+            } else if(portal === 'partsgeek') {
+                document.getElementById('t-pg-overlay').classList.remove('active');
+                document.getElementById('t-pg-scan').classList.remove('active');
+            }
+
+            // 6. Reveal Content
+            setTimeout(() => {
+                document.querySelectorAll('.stagger-1, .stagger-2, .stagger-3').forEach(el => el.classList.add('stagger-in'));
+            }, 100);
         }
 
-        function handleExcelUpload(event) {
-            const file = event.target.files[0];
+        // --- I/O Engine ---
+        function updateStats() {
+            const val = document.getElementById('orders').value;
+            let count = 0;
+            if (currentPortal === 'partsgeek') {
+                count = new Set(val.match(/PG1\d+/g) || []).size;
+            } else {
+                count = val.split(/\n/).filter(l => l.trim()).length;
+            }
+            document.getElementById('node-count').innerText = count;
+        }
+
+        function handleExcel(e) {
+            const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+            reader.onload = function(evt) {
+                const workbook = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+                if (!rows.length) return;
+                
+                const header = rows[0].map(h => String(h).trim().toLowerCase());
+                let poCol = header.findIndex(h => h.includes('po number') || h === 'po#' || h === 'po');
+                if (poCol === -1) poCol = 0;
 
-                    if (!rows.length) throw new Error("Sheet is empty");
-
-                    // Find the "PO#" column in the header row; fall back to column A
-                    const headerRow = rows[0].map(h => String(h).trim().toLowerCase());
-                    let poCol = headerRow.findIndex(h => h === 'po#' || h === 'po #' || h === 'po');
-                    if (poCol === -1) poCol = 0;
-
-                    // Pull every PO# value below the header, deduped, in original order
-                    const seen = new Set();
-                    const poNumbers = [];
-                    for (let i = 1; i < rows.length; i++) {
-                        const raw = rows[i][poCol];
-                        if (raw === undefined || raw === null) continue;
-                        const val = String(raw).trim();
-                        if (val && !seen.has(val)) { seen.add(val); poNumbers.push(val); }
-                    }
-
-                    if (!poNumbers.length) throw new Error("No PO# values found in that sheet");
-
-                    document.getElementById('orders').value = poNumbers.join('\n');
-                    updateByteCount();
-                    event.target.value = ''; // allow re-uploading the same file later
-
-                    executeSequence();
-
-                } catch (err) {
-                    alert("Couldn't read that file: " + err.message);
-                }
+                const pos = [...new Set(rows.slice(1).map(r => String(r[poCol] || '').trim()).filter(Boolean))];
+                document.getElementById('orders').value = pos.join('\n');
+                updateStats();
+                e.target.value = '';
             };
             reader.readAsArrayBuffer(file);
         }
 
-        function switchTab(id, el) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        function setTab(id, el) {
+            document.querySelectorAll('.d-tab').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
-            ['shipped', 'notracking', 'notfound'].forEach(t => { document.getElementById(`tbl-${t}`).style.display = (t === id) ? 'table' : 'none'; });
+            ['shipped', 'notracking', 'notfound'].forEach(t => { 
+                document.getElementById(`tbl-${t}`).style.display = t === id ? 'table' : 'none'; 
+            });
         }
 
-        async function copySingle(text, el) {
-            try {
-                await navigator.clipboard.writeText(text);
-                const og = el.className;
-                el.className = 'bi bi-check-lg copy-act'; el.style.color = 'var(--emerald)';
-                setTimeout(() => { el.className = og; el.style.color = ''; }, 1000);
-            } catch(e) {}
+        async function copyData(txt, el) {
+            await navigator.clipboard.writeText(txt);
+            const og = el.className;
+            el.className = 'bi bi-check-all copy-btn';
+            setTimeout(() => { el.className = og; }, 1000);
         }
 
         async function copyColumn(tbodyId, colIndex, btnElement) {
@@ -413,144 +621,140 @@
             let textArray = [];
             rows.forEach(row => {
                 const cell = row.cells[colIndex];
-                if (cell && cell.hasAttribute('data-raw')) textArray.push(cell.getAttribute('data-raw'));
+                if (cell && cell.hasAttribute('data-raw')) {
+                    const rawValue = cell.getAttribute('data-raw');
+                    if(rawValue) textArray.push(rawValue);
+                }
             });
             if (textArray.length > 0) {
                 try {
                     await navigator.clipboard.writeText(textArray.join('\n'));
                     const ogHtml = btnElement.innerHTML;
-                    btnElement.innerHTML = '<i class="bi bi-check-lg"></i> Copied';
-                    btnElement.style.background = 'var(--emerald)';
-                    btnElement.style.color = '#fff';
-                    btnElement.style.borderColor = 'var(--emerald)';
+                    btnElement.innerHTML = '<i class="bi bi-check-all"></i> Copied';
+                    btnElement.classList.add('copied');
                     setTimeout(() => {
                         btnElement.innerHTML = ogHtml;
-                        btnElement.style.background = '';
-                        btnElement.style.color = '';
-                        btnElement.style.borderColor = '';
+                        btnElement.classList.remove('copied');
                     }, 1500);
                 } catch(e) {}
             }
         }
 
-        function runLiquidSim(totalItems) {
-            const msgs = ["Compiling payload matrix...", "Bypassing security gate...", "Fetching neural records...", "Synthesizing export...", "Finalizing node links..."];
-            const fill = document.getElementById('liquidFill');
-            const txt = document.getElementById('progressText');
-            let p = 0;
-            const int = setInterval(() => {
-                p += Math.random() * 12;
-                if(p > 92) p = 92;
-                fill.style.width = p + '%';
-                txt.innerText = msgs[Math.floor(Math.random() * msgs.length)] + ` [${Math.floor(p)}%]`;
-            }, 300);
-            return int;
+        // --- SPLIT ORDER GROUPING RENDERER ---
+        function renderGroupedTable(tbodyId, dataArray, type) {
+            const grouped = {};
+            dataArray.forEach(item => {
+                if(!grouped[item.order]) grouped[item.order] = [];
+                grouped[item.order].push(item);
+            });
+
+            let html = '';
+            for (const [order, items] of Object.entries(grouped)) {
+                const isSplit = items.length > 1;
+                
+                if (isSplit) {
+                    html += `<tr class="split-parent">
+                        <td colspan="6">
+                            <i class="bi bi-diagram-2"></i> ${order} 
+                            <i class="bi bi-copy copy-btn" onclick="copyData('${order}', this)"></i> 
+                            <span style="float:right; font-size:10px; color:var(--text-muted); font-family:var(--font-ui); font-weight:700; text-transform:uppercase;">${items.length} Nodes</span>
+                        </td>
+                    </tr>`;
+                }
+
+                items.forEach((row, i) => {
+                    let branch = isSplit ? (i === items.length - 1 ? '└─ ' : '├─ ') : '';
+                    let rowClass = isSplit ? 'split-child' : '';
+                    let displayOrder = isSplit ? '' : `${order} <i class="bi bi-copy copy-btn" onclick="copyData('${order}', this)"></i>`;
+
+                    if (type === 'shipped') {
+                        let trk = row.tracking ? `${row.tracking} <i class="bi bi-copy copy-btn" onclick="copyData('${row.tracking}', this)"></i>` : `<span style="color:var(--text-muted); font-style:italic">N/A</span>`;
+                        html += `<tr class="${rowClass}">
+                            <td data-raw="${isSplit ? '' : order}" class="mono">${displayOrder}</td>
+                            <td data-raw="${row.so_number}" class="mono" style="color:var(--text-main); font-weight:700;"><span style="color:var(--text-muted); font-weight:400;">${branch}</span>${row.so_number} <i class="bi bi-copy copy-btn" onclick="copyData('${row.so_number}', this)"></i></td>
+                            <td class="mono">${row.ship_from}</td>
+                            <td class="mono" style="color:var(--text-muted)">${row.created_date}</td>
+                            <td data-raw="${row.tracking || ''}" class="mono">${trk}</td>
+                            <td><span class="badge-st st-ok">${row.status}</span></td>
+                        </tr>`;
+                    } else if (type === 'notracking') {
+                        html += `<tr class="${rowClass}">
+                            <td data-raw="${isSplit ? '' : order}" class="mono">${displayOrder}</td>
+                            <td data-raw="${row.so_number}" class="mono" style="color:var(--text-main); font-weight:700;"><span style="color:var(--text-muted); font-weight:400;">${branch}</span>${row.so_number}</td>
+                            <td style="color:var(--text-muted)">${row.reason}</td>
+                        </tr>`;
+                    }
+                });
+            }
+            document.getElementById(tbodyId).innerHTML = html;
         }
 
-        function countUp(id, target) {
-            let cur = 0; const el = document.getElementById(id);
-            const inc = target / 30; 
-            if(target === 0) { el.innerText = 0; return; }
-            const timer = setInterval(() => {
-                cur += inc;
-                if(cur >= target) { clearInterval(timer); el.innerText = target; }
-                else { el.innerText = Math.floor(cur); }
-            }, 30);
-        }
+        async function execute() {
+            const raw = document.getElementById('orders').value;
+            if(!raw.trim()) return;
 
-        async function executeSequence() {
-            const raw = document.getElementById('orders').value.trim();
-            if(!raw) return;
+            let finalOrders = currentPortal === 'partsgeek' 
+                ? [...new Set(raw.match(/PG1\d+/g) || [])]
+                : raw.split(/\n/).map(s => s.trim()).filter(Boolean);
 
-            document.getElementById('actionBar').style.display = 'none';
-            document.getElementById('progressUI').style.display = 'block';
-            document.getElementById('resultsSection').style.display = 'none';
+            if(!finalOrders.length) { alert("No valid identifiers found."); return; }
+
+            document.getElementById('controls').style.display = 'none';
+            document.getElementById('loader-wrap').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
             
-            document.querySelectorAll('.results-section .anim-up').forEach(el => { el.style.opacity = '0'; el.style.transform = 'translateY(30px)'; });
-
-            const sim = runLiquidSim(raw.split(/\n/).length);
+            const fill = document.getElementById('loader-bar');
+            const txt = document.getElementById('loader-txt');
+            
+            let p = 0; 
+            const sim = setInterval(() => { 
+                p += 5; if(p>90) p=90; fill.style.width = p+'%'; 
+                if(currentPortal === 'partsgeek') {
+                    txt.innerText = `SCANNING DATA STREAM... [${p}%]`;
+                }
+            }, 200);
             const t0 = performance.now();
 
             try {
-                // Post the raw text to the backend API we mapped in app.py
                 const res = await fetch('/api/extract', { 
-                    method: 'POST', 
-                    headers: {'Content-Type':'application/json'}, 
-                    body: JSON.stringify({orders: raw}) 
+                    method: 'POST', headers: {'Content-Type':'application/json'}, 
+                    body: JSON.stringify({orders: finalOrders.join('\n')}) 
                 });
                 
                 if(res.status === 401) { window.location.href='/'; return; }
-                
                 const data = await res.json();
-                clearInterval(sim);
+                clearInterval(sim); fill.style.width = '100%';
+                if(currentPortal === 'partsgeek') txt.innerText = `SCAN COMPLETE [100%]`;
 
-                if(data.error) { 
-                    document.getElementById('liquidFill').style.background = 'linear-gradient(90deg, #EF4444, #F87171)';
-                    document.getElementById('liquidFill').style.width = '100%';
-                    document.getElementById('progressText').innerText = "ERROR: " + data.error;
-                    
-                    setTimeout(() => {
-                        document.getElementById('progressUI').style.display = 'none';
-                        document.getElementById('actionBar').style.display = 'flex';
-                        document.getElementById('liquidFill').style.background = 'linear-gradient(90deg, #00C177, #00B8D9)';
-                        document.getElementById('liquidFill').style.width = '0%';
-                    }, 4000);
-                    return; 
-                }
+                if(data.error) throw new Error(data.error);
                 
-                document.getElementById('liquidFill').style.width = '100%';
-                document.getElementById('progressText').innerText = "Sequence Complete [100%]";
-                const t1 = performance.now();
-                const lat = ((t1-t0)/1000).toFixed(2);
-
-                document.getElementById('countShipped').innerText = data.shipped.length;
+                renderGroupedTable('bd-shipped', data.shipped, 'shipped');
+                renderGroupedTable('bd-notracking', data.no_tracking, 'notracking');
                 
-                // MAP THE NEW FIELDS TO THE TABLE ROWS HERE
-                document.getElementById('bd-shipped').innerHTML = data.shipped.map(r => `
-                    <tr>
-                        <td data-raw="${r.order}" class="mono">${r.order} <i class="bi bi-clipboard copy-act" onclick="copySingle('${r.order}', this)"></i></td>
-                        <td data-raw="${r.customer_order}" class="mono">${r.customer_order} <i class="bi bi-clipboard copy-act" onclick="copySingle('${r.customer_order}', this)"></i></td>
-                        <td class="mono">${r.ship_from}</td>
-                        <td class="mono" style="color:var(--text-dim);">${r.created_date}</td>
-                        <td><span class="status-badge st-ok">${r.status}</span></td>
-                    </tr>
-                `).join('');
+                document.getElementById('bd-notfound').innerHTML = data.not_found.map(r => `<tr><td data-raw="${r.order}" class="mono" style="color:#EF4444; font-weight:bold;">${r.order} <i class="bi bi-copy copy-btn" onclick="copyData('${r.order}', this)"></i></td><td style="color:var(--text-muted)">${r.reason}</td></tr>`).join('');
 
-                document.getElementById('countNoTrk').innerText = data.no_tracking.length;
-                document.getElementById('bd-notracking').innerHTML = data.no_tracking.map(r => `<tr><td data-raw="${r.order}" class="mono">${r.order} <i class="bi bi-clipboard copy-act" onclick="copySingle('${r.order}', this)"></i></td><td><span class="status-badge st-warn">${r.status}</span></td><td style="color:var(--text-dim);">${r.reason}</td></tr>`).join('');
-
-                document.getElementById('countErr').innerText = data.not_found.length;
-                document.getElementById('bd-notfound').innerHTML = data.not_found.map(r => `<tr><td data-raw="${r.order}" class="mono" style="color:#DC2626">${r.order} <i class="bi bi-clipboard copy-act" onclick="copySingle('${r.order}', this)"></i></td><td style="color:var(--text-dim);">${r.reason}</td></tr>`).join('');
+                document.getElementById('st-tot').innerText = data.shipped.length + data.no_tracking.length + data.not_found.length;
+                document.getElementById('st-ok').innerText = data.shipped.length; document.getElementById('tOk').innerText = data.shipped.length;
+                document.getElementById('st-warn').innerText = data.no_tracking.length; document.getElementById('tWarn').innerText = data.no_tracking.length;
+                document.getElementById('st-err').innerText = data.not_found.length; document.getElementById('tErr').innerText = data.not_found.length;
 
                 setTimeout(() => {
-                    document.getElementById('progressUI').style.display = 'none';
-                    document.getElementById('actionBar').style.display = 'flex';
-                    document.getElementById('resultsSection').style.display = 'block';
-                    
-                    const resAnims = document.querySelectorAll('.results-section .anim-up');
-                    resAnims.forEach((el, i) => { setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }, i * 150); });
-
-                    setTimeout(() => {
-                        countUp('stTotal', data.shipped.length + data.no_tracking.length + data.not_found.length);
-                        countUp('stSuccess', data.shipped.length);
-                        countUp('stFailed', data.not_found.length + data.no_tracking.length);
-                        document.getElementById('stTime').innerText = lat;
-                    }, 300);
-
-                }, 800);
+                    document.getElementById('loader-wrap').style.display = 'none';
+                    document.getElementById('controls').style.display = 'flex';
+                    document.getElementById('results').style.display = 'block';
+                    fill.style.width = '0%';
+                }, 500);
 
             } catch (err) {
                 clearInterval(sim);
-                document.getElementById('liquidFill').style.background = '#EF4444';
-                document.getElementById('liquidFill').style.width = '100%';
-                document.getElementById('progressText').innerText = "System Exception Occurred";
-                
+                fill.style.background = '#EF4444'; fill.style.width = '100%';
+                txt.innerText = "SYSTEM EXCEPTION OCCURRED";
                 setTimeout(() => {
-                    document.getElementById('progressUI').style.display = 'none';
-                    document.getElementById('actionBar').style.display = 'flex';
-                    document.getElementById('liquidFill').style.background = 'linear-gradient(90deg, #00C177, #00B8D9)';
-                    document.getElementById('liquidFill').style.width = '0%';
-                }, 3000);
+                    document.getElementById('loader-wrap').style.display = 'none';
+                    document.getElementById('controls').style.display = 'flex';
+                    fill.style.background = 'var(--accent)'; fill.style.width = '0%';
+                    alert("Exception: " + err.message);
+                }, 2000);
             }
         }
     </script>
