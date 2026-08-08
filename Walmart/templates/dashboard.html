@@ -4,386 +4,312 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ORIGIN | Enterprise Operations</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         /* =========================================
-           ORIGIN OS: CORE KINEMATICS & VARIABLES
+           ORIGIN OS — CORE TOKENS
            ========================================= */
         :root {
-            --ease-fluid: cubic-bezier(0.16, 1, 0.3, 1);
-            --ease-mechanical: cubic-bezier(0.85, 0, 0.15, 1);
-            --env-transition: opacity 1.2s var(--ease-fluid), transform 1.6s var(--ease-fluid);
-            /* Shared semantic status colors (kept legible in both themes) */
-            --ok: #10B981; --ok-soft: rgba(16,185,129,0.14); --ok-line: rgba(16,185,129,0.35);
-            --warn: #F59E0B; --warn-soft: rgba(245,158,11,0.14); --warn-line: rgba(245,158,11,0.35);
-            --err: #EF4444; --err-soft: rgba(239,68,68,0.14); --err-line: rgba(239,68,68,0.35);
+            --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
+            --ok: #10B981; --ok-soft: rgba(16,185,129,0.12); --ok-line: rgba(16,185,129,0.30);
+            --warn: #F59E0B; --warn-soft: rgba(245,158,11,0.12); --warn-line: rgba(245,158,11,0.30);
+            --err: #EF4444; --err-soft: rgba(239,68,68,0.12); --err-line: rgba(239,68,68,0.30);
         }
 
-        /* --- LIGHT MODE BASE (UI Elements) --- */
         :root[data-theme="light"] {
             --surface-1: #FFFFFF;
-            --surface-2: rgba(241, 245, 249, 0.85);
+            --surface-2: #F1F5F9;
+            --surface-3: #F8FAFC;
             --text-main: #0F172A;
             --text-muted: #64748B;
-            --shadow-sm: 0 2px 10px rgba(15,23,42,0.04);
-            --shadow-lg: 0 24px 48px -12px rgba(15,23,42,0.12);
+            --shadow-sm: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+            --shadow-lg: 0 20px 40px -16px rgba(15,23,42,0.16);
         }
-
-        /* --- DARK MODE BASE (UI Elements) --- */
         :root[data-theme="dark"] {
-            --surface-1: rgba(15, 23, 42, 0.72);
-            --surface-2: rgba(15, 23, 42, 0.45);
-            --text-main: #F8FAFC;
-            --text-muted: #94A3B8;
-            --shadow-sm: 0 2px 12px rgba(0,0,0,0.25);
-            --shadow-lg: 0 28px 56px -12px rgba(0,0,0,0.55);
+            --surface-1: #0E1626;
+            --surface-2: #17203353;
+            --surface-3: #0B1220;
+            --text-main: #F1F5F9;
+            --text-muted: #8A9BB4;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+            --shadow-lg: 0 24px 48px -16px rgba(0,0,0,0.6);
         }
 
         /* =========================================
-           ENVIRONMENTAL ENGINE (PER-PORTAL IDENTITY)
+           PER-PORTAL IDENTITY
            ========================================= */
+        body[data-portal="walmart"][data-theme="light"] { --bg-base: #F5F8FC; --env-a: rgba(0,113,206,0.07); --border: rgba(15,23,42,0.08); --input-bg: #F8FAFC; }
+        body[data-portal="walmart"][data-theme="dark"]  { --bg-base: #060B15; --env-a: rgba(0,113,206,0.14); --border: rgba(148,163,184,0.14); --input-bg: #0B1220; }
+        body[data-portal="walmart"] { --accent: #0071CE; --accent-glow: rgba(0,113,206,0.20); --accent-spark: #FFC220; --radius-lg: 18px; --radius-md: 12px; --radius-sm: 8px; --btn-weight: 600; --text-transform: none; --letter: 0px; }
 
-        /* 1. WALMART — Clean digital retail, soft & rounded */
-        body[data-portal="walmart"][data-theme="light"] {
-            --bg-base: #F4F7FB;
-            --env-ambient: radial-gradient(circle at 88% 8%, rgba(0,113,206,0.10) 0%, transparent 46%), radial-gradient(circle at 8% 92%, rgba(0,113,206,0.06) 0%, transparent 40%);
-            --env-geom: rgba(0,113,206,0.05);
-            --border: rgba(0,113,206,0.14); --input-bg: #FFFFFF;
-        }
-        body[data-portal="walmart"][data-theme="dark"] {
-            --bg-base: #050B16;
-            --env-ambient: radial-gradient(circle at 88% 8%, rgba(0,113,206,0.16) 0%, transparent 55%), radial-gradient(circle at 8% 92%, rgba(0,113,206,0.09) 0%, transparent 46%);
-            --env-geom: rgba(0,113,206,0.10);
-            --border: rgba(0,113,206,0.24); --input-bg: rgba(0,0,0,0.25);
-        }
-        body[data-portal="walmart"] {
-            --accent: #0071CE; --accent-glow: rgba(0,113,206,0.22); --accent-spark: #FFC220;
-            --radius-lg: 22px; --radius-md: 14px; --radius-sm: 9px;
-            --font-ui: 'Inter', sans-serif; --btn-weight: 600; --text-transform: none;
-            --letter: 0px;
-        }
+        body[data-portal="turn5"][data-theme="light"] { --bg-base: #EDEFF3; --env-a: rgba(229,57,53,0.05); --border: rgba(15,23,42,0.12); --input-bg: #FFFFFF; }
+        body[data-portal="turn5"][data-theme="dark"]  { --bg-base: #0A0A0B; --env-a: rgba(229,57,53,0.09); --border: rgba(255,255,255,0.10); --input-bg: #101012; }
+        body[data-portal="turn5"] { --accent: #E53935; --accent-glow: rgba(229,57,53,0.20); --accent-spark: #FF7043; --radius-lg: 6px; --radius-md: 4px; --radius-sm: 3px; --btn-weight: 800; --text-transform: uppercase; --letter: 0.4px; }
 
-        /* 2. TURN5 — Industrial performance, sharp & mechanical */
-        body[data-portal="turn5"][data-theme="light"] {
-            --bg-base: #E4E9F0;
-            --env-ambient: radial-gradient(circle at 50% -10%, rgba(229,57,53,0.05) 0%, transparent 65%);
-            --env-geom: rgba(15,23,42,0.05); --env-ring: rgba(15,23,42,0.09);
-            --border: #C3CCD8; --input-bg: #FFFFFF;
-        }
-        body[data-portal="turn5"][data-theme="dark"] {
-            --bg-base: #070707;
-            --env-ambient: radial-gradient(circle at 50% -10%, rgba(229,57,53,0.10) 0%, transparent 65%);
-            --env-geom: rgba(255,255,255,0.035); --env-ring: rgba(255,255,255,0.06);
-            --border: #2E2E2E; --input-bg: rgba(0,0,0,0.55);
-        }
-        body[data-portal="turn5"] {
-            --accent: #E53935; --accent-glow: rgba(229,57,53,0.22); --accent-spark: #FF7043;
-            --radius-lg: 2px; --radius-md: 2px; --radius-sm: 2px;
-            --font-ui: 'Inter', sans-serif; --btn-weight: 800; --text-transform: uppercase;
-            --letter: 0.5px;
-        }
-
-        /* 3. PARTSGEEK — Diagnostic terminal, mono & matrix */
-        body[data-portal="partsgeek"][data-theme="light"] {
-            --bg-base: #EEF3F0;
-            --env-ambient: radial-gradient(circle at 50% 50%, rgba(0,200,110,0.05) 0%, transparent 78%);
-            --env-geom: rgba(74,102,88,0.10); --env-glow: rgba(0,200,110,0.08);
-            --border: rgba(0,160,90,0.28); --input-bg: #FFFFFF;
-        }
-        body[data-portal="partsgeek"][data-theme="dark"] {
-            --bg-base: #020A05;
-            --env-ambient: radial-gradient(circle at 50% 50%, rgba(0,230,118,0.07) 0%, transparent 78%);
-            --env-geom: rgba(0,230,118,0.06); --env-glow: rgba(0,230,118,0.16);
-            --border: rgba(0,230,118,0.22); --input-bg: #000000;
-        }
-        body[data-portal="partsgeek"] {
-            --accent: #00B26E; --accent-glow: rgba(0,178,110,0.18); --accent-spark: #24E58A;
-            --radius-lg: 5px; --radius-md: 3px; --radius-sm: 3px;
-            --font-ui: 'JetBrains Mono', monospace; --btn-weight: 700; --text-transform: none;
-            --letter: 0px;
-        }
+        body[data-portal="partsgeek"][data-theme="light"] { --bg-base: #EEF3F0; --env-a: rgba(0,178,110,0.06); --border: rgba(0,120,70,0.16); --input-bg: #F7FBF9; }
+        body[data-portal="partsgeek"][data-theme="dark"]  { --bg-base: #030A06; --env-a: rgba(0,230,118,0.08); --border: rgba(0,230,118,0.16); --input-bg: #05100A; }
+        body[data-portal="partsgeek"] { --accent: #00B26E; --accent-glow: rgba(0,178,110,0.18); --accent-spark: #24E58A; --radius-lg: 8px; --radius-md: 6px; --radius-sm: 4px; --btn-weight: 700; --text-transform: none; --letter: 0px; }
         body[data-portal="partsgeek"][data-theme="dark"] { --accent: #00E676; }
 
-        /* --- GLOBAL BASE --- */
+        /* =========================================
+           BASE
+           ========================================= */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { background: var(--bg-base); }
         body {
-            background-color: var(--bg-base); color: var(--text-main); font-family: var(--font-ui);
-            min-height: 100vh; overflow-x: hidden;
-            transition: background-color 0.9s ease, color 0.5s ease, font-family 0.3s ease;
+            background-color: var(--bg-base); color: var(--text-main);
+            font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden;
+            transition: background-color 0.6s ease, color 0.4s ease;
             -webkit-font-smoothing: antialiased;
         }
         ::selection { background: var(--accent); color: #fff; }
+        a { color: inherit; }
 
         /* =========================================
-           BACKGROUND ENVIRONMENTS (calmer, low-noise)
+           AMBIENT BACKGROUND (lightweight)
            ========================================= */
-        #origin-environments { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-        .env-layer { position: absolute; inset: 0; opacity: 0; transition: var(--env-transition); transform: scale(1.04); will-change: opacity, transform; }
-        body[data-portal="walmart"] .env-walmart { opacity: 1; transform: scale(1); }
-        body[data-portal="turn5"] .env-turn5 { opacity: 1; transform: scale(1); }
-        body[data-portal="partsgeek"] .env-partsgeek { opacity: 1; transform: scale(1); }
+        #origin-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+        .bg-glow {
+            position: absolute; width: 60vw; height: 60vw; border-radius: 50%;
+            background: radial-gradient(circle, var(--env-a) 0%, transparent 70%);
+            transition: background 0.8s ease; will-change: transform;
+        }
+        .bg-glow.g1 { top: -22vw; right: -14vw; animation: drift1 26s ease-in-out infinite alternate; }
+        .bg-glow.g2 { bottom: -24vw; left: -16vw; animation: drift2 32s ease-in-out infinite alternate; }
+        @keyframes drift1 { to { transform: translate(-4vw, 4vw); } }
+        @keyframes drift2 { to { transform: translate(4vw, -3vw); } }
+        .bg-mesh {
+            position: absolute; inset: 0; opacity: 0.5;
+            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 56px 56px;
+            -webkit-mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 72%);
+            mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 72%);
+        }
 
-        /* WALMART BG */
-        .env-walmart .wm-ambient { position: absolute; inset: 0; background: var(--env-ambient); transition: background 1s ease; }
-        .wm-arc { position: absolute; border: 1px solid var(--env-geom); border-radius: 42% 58% 70% 30%; transition: border-color 1s ease; }
-        .wm-arc-1 { width: 110vw; height: 110vw; top: -46vw; left: -18vw; animation: breatheArc 60s infinite alternate ease-in-out; }
-        .wm-arc-2 { width: 70vw; height: 70vw; bottom: -18vw; right: -8vw; animation: breatheArc 48s infinite alternate-reverse ease-in-out; }
-        .wm-spark { position: absolute; top: 22%; right: 24%; width: 3px; height: 3px; background: var(--accent-spark); box-shadow: 0 0 12px 2px var(--accent-spark); border-radius: 50%; animation: pulseSpark 14s infinite; opacity: 0; }
-        @keyframes breatheArc { 0% { transform: rotate(0deg) scale(1); } 100% { transform: rotate(8deg) scale(1.04); } }
-        @keyframes pulseSpark { 0%, 100% { opacity: 0; transform: translateY(0); } 50% { opacity: 0.7; transform: translateY(-18px); } }
-
-        /* TURN5 BG */
-        .env-turn5 .t5-ambient { position: absolute; inset: 0; background: var(--env-ambient); transition: background 1s ease; }
-        .t5-hatch { position: absolute; inset: 0; background-image: repeating-linear-gradient(45deg, transparent, transparent 13px, var(--env-geom) 13px, var(--env-geom) 14px); }
-        .t5-ring { position: absolute; top: 50%; left: 50%; width: 92vh; height: 92vh; margin-left: -46vh; margin-top: -46vh; border: 1px dashed var(--env-ring); border-radius: 50%; animation: rotateRing 180s linear infinite; }
-        @keyframes rotateRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        /* PARTSGEEK BG */
-        .env-partsgeek .pg-ambient { position: absolute; inset: 0; background: var(--env-ambient); transition: background 1s ease; }
-        .pg-grid { position: absolute; inset: 0; background-image: linear-gradient(var(--env-geom) 1px, transparent 1px), linear-gradient(90deg, var(--env-geom) 1px, transparent 1px); background-size: 44px 44px; }
-        .pg-scan-field { position: absolute; top: -22vh; left: 0; width: 100vw; height: 22vh; background: linear-gradient(to bottom, transparent, var(--env-glow), transparent); animation: diagnosticScan 32s infinite linear; }
-        .pg-node { position: absolute; width: 4px; height: 4px; background: var(--accent); box-shadow: 0 0 10px var(--accent); border-radius: 50%; opacity: 0; animation: blinkNode 9s infinite; }
-        .pg-node.n1 { top: 30%; left: 30%; animation-delay: 2s; }
-        .pg-node.n2 { top: 62%; left: 70%; animation-delay: 5s; }
-        @keyframes diagnosticScan { 0% { transform: translateY(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(150vh); opacity: 0; } }
-        @keyframes blinkNode { 0%, 100% { opacity: 0; } 50% { opacity: 0.75; } }
+        /* =========================================
+           PORTAL TRANSITION SWEEP (subtle, tech)
+           ========================================= */
+        #portal-sweep { position: fixed; top: 68px; left: 0; height: 2px; width: 100%; z-index: 1500; pointer-events: none; overflow: hidden; opacity: 0; }
+        #portal-sweep.go { opacity: 1; }
+        #portal-sweep::before {
+            content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 45%;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            box-shadow: 0 0 14px var(--accent);
+        }
+        #portal-sweep.go::before { animation: sweepMove 0.62s var(--ease-fluid); }
+        @keyframes sweepMove { from { transform: translateX(-100%); } to { transform: translateX(330%); } }
 
         /* =========================================
            NAVBAR
            ========================================= */
         .nav {
-            position: fixed; top: 0; left: 0; right: 0; height: 70px;
-            background: var(--surface-1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            position: fixed; top: 0; left: 0; right: 0; height: 68px;
+            background: color-mix(in srgb, var(--surface-1) 82%, transparent);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;
-            padding: 0 clamp(16px, 4vw, 40px); z-index: 1000; box-shadow: var(--shadow-sm); transition: all 0.6s ease;
+            padding: 0 clamp(16px, 4vw, 40px); z-index: 1000;
         }
-        .nav-logo { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 15px; letter-spacing: 3px; font-family: 'Inter', sans-serif; }
-        .nav-logo i { color: var(--accent); font-size: 20px; transition: color 0.6s; }
-        .nav-actions { display: flex; align-items: center; gap: 18px; font-family: 'Inter', sans-serif; }
+        .nav-logo { display: flex; align-items: center; gap: 11px; font-weight: 800; font-size: 15px; letter-spacing: 3.5px; }
+        .nav-logo .mark { color: var(--accent); display: flex; transition: color 0.5s; }
+        .nav-actions { display: flex; align-items: center; gap: 16px; }
         .theme-btn {
             background: transparent; border: 1px solid var(--border); color: var(--text-main);
-            width: 38px; height: 38px; border-radius: var(--radius-md); cursor: pointer; transition: all 0.4s;
+            width: 38px; height: 38px; border-radius: var(--radius-md); cursor: pointer; transition: border-color 0.3s, color 0.3s;
             display: flex; align-items: center; justify-content: center; font-size: 15px;
         }
-        .theme-btn:hover { border-color: var(--accent); color: var(--accent); transform: rotate(15deg); }
-        .user-badge { background: var(--surface-2); border: 1px solid var(--border); padding: 8px 15px; border-radius: var(--radius-md); font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 8px; letter-spacing: 0.6px; transition: all 0.6s; }
+        .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .theme-btn i { transition: transform 0.3s var(--ease-fluid); }
+        .user-badge { background: var(--surface-2); border: 1px solid var(--border); padding: 8px 14px; border-radius: var(--radius-md); font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; color: var(--text-main); }
         .user-badge span { width: 6px; height: 6px; background: var(--ok); border-radius: 50%; box-shadow: 0 0 8px var(--ok); }
-        .logout { color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.3s; }
+        .logout { color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 600; transition: color 0.2s; }
         .logout:hover { color: var(--err); }
 
         /* =========================================
            PORTAL SELECTOR
            ========================================= */
-        .portal-nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin: 104px auto 36px; padding: 0 16px; position: relative; z-index: 10; font-family: 'Inter', sans-serif; }
+        .portal-nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 100px auto 34px; padding: 0 16px; position: relative; z-index: 10; }
         .portal-tab {
             background: var(--surface-1); border: 1px solid var(--border); color: var(--text-muted);
-            padding: 13px 26px; border-radius: var(--radius-md); font-size: 12.5px; font-weight: 700; letter-spacing: 1px;
-            cursor: pointer; transition: all 0.4s var(--ease-fluid); display: flex; align-items: center; gap: 10px;
-            box-shadow: var(--shadow-sm); backdrop-filter: blur(12px);
+            padding: 11px 20px; border-radius: var(--radius-md); font-size: 12.5px; font-weight: 700; letter-spacing: 0.6px;
+            cursor: pointer; transition: border-color 0.25s, color 0.25s, transform 0.25s var(--ease-fluid), box-shadow 0.25s;
+            display: flex; align-items: center; gap: 9px; box-shadow: var(--shadow-sm);
         }
-        .portal-tab i { font-size: 17px; transition: 0.4s; }
+        .portal-tab .pico { display: flex; opacity: 0.85; transition: opacity 0.25s; }
         .portal-tab:hover { border-color: var(--accent); transform: translateY(-2px); color: var(--text-main); }
-        .portal-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 8px 24px var(--accent-glow); pointer-events: none; }
-        .portal-tab.active i { color: #fff; }
+        .portal-tab:hover .pico { opacity: 1; }
+        .portal-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 8px 22px var(--accent-glow); pointer-events: none; }
+        .portal-tab.active .pico { opacity: 1; }
 
         /* =========================================
            WORKSPACE
            ========================================= */
-        .workspace { max-width: 1200px; margin: 0 auto 64px; padding: 0 clamp(16px, 4vw, 20px); position: relative; z-index: 10; }
-        .header { margin-bottom: 22px; }
-        .header h1 { font-size: clamp(24px, 5vw, 34px); font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; transition: color 0.4s; text-transform: var(--text-transform); }
-        .header p { color: var(--text-muted); font-size: 14px; font-weight: 500; font-family: 'Inter', sans-serif; }
+        .workspace { max-width: 1220px; margin: 0 auto 64px; padding: 0 clamp(16px, 4vw, 24px); position: relative; z-index: 10; transition: opacity 0.3s var(--ease-fluid), transform 0.3s var(--ease-fluid), filter 0.3s ease; }
+        .workspace.leaving { opacity: 0; transform: translateY(10px); filter: blur(5px); }
+
+        /* Brand header (icon + simple name) */
+        .brand-head { display: flex; align-items: center; gap: 15px; margin-bottom: 22px; }
+        .brand-mark {
+            width: 52px; height: 52px; flex: none; border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center;
+            background: var(--accent-glow); color: var(--accent); border: 1px solid var(--border);
+        }
+        .brand-name { font-size: clamp(24px, 5vw, 32px); font-weight: 800; letter-spacing: -0.6px; text-transform: var(--text-transform); }
 
         .card {
             background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-lg);
-            padding: clamp(20px, 4vw, 30px); box-shadow: var(--shadow-lg); transition: all 0.6s ease; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            padding: clamp(18px, 4vw, 26px); box-shadow: var(--shadow-lg);
         }
 
-        /* Editor */
-        .editor-wrap { position: relative; margin-bottom: 22px; }
+        /* Input module */
+        .io-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .io-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--text-muted); text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+        .io-label i { color: var(--accent); }
+        .io-clear { background: transparent; border: none; color: var(--text-muted); font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: color 0.2s; font-family: 'Inter', sans-serif; }
+        .io-clear:hover { color: var(--err); }
+
+        .editor-wrap { position: relative; margin-bottom: 20px; }
         .editor {
-            width: 100%; height: 210px; background: var(--input-bg); border: 1px solid var(--border);
-            border-radius: var(--radius-md); padding: 22px; color: var(--text-main); font-family: 'JetBrains Mono', monospace;
-            font-size: 13px; resize: vertical; outline: none; transition: border-color 0.3s, box-shadow 0.3s; line-height: 1.6;
+            width: 100%; height: 200px; background: var(--input-bg); border: 1px solid var(--border);
+            border-radius: var(--radius-md); padding: 18px 20px; color: var(--text-main); font-family: 'JetBrains Mono', monospace;
+            font-size: 13px; resize: vertical; outline: none; transition: border-color 0.2s, box-shadow 0.2s; line-height: 1.7;
         }
+        .editor::placeholder { color: var(--text-muted); opacity: 0.7; }
         .editor:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-        body[data-portal="partsgeek"] .editor { color: var(--accent-spark); font-weight: 500; }
-        body[data-portal="partsgeek"] .editor::placeholder { color: var(--accent-glow); }
+        body[data-portal="partsgeek"] .editor { color: var(--accent); }
 
-        /* Controls */
         .controls { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; }
-        .meta-data { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-        .meta-data span { color: var(--accent); font-size: 14px; }
-        .btn-group { display: flex; gap: 14px; flex-wrap: wrap; }
+        .meta-data { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
+        .meta-data span { color: var(--accent); font-size: 15px; }
+        .btn-group { display: flex; gap: 12px; flex-wrap: wrap; }
         .btn {
-            padding: 0 22px; height: 46px; border-radius: var(--radius-md); font-size: 13px; font-weight: var(--btn-weight); text-transform: var(--text-transform);
-            cursor: pointer; transition: all 0.35s var(--ease-fluid); border: none; display: flex; align-items: center; gap: 10px;
-            font-family: var(--font-ui); letter-spacing: var(--letter);
+            padding: 0 20px; height: 46px; border-radius: var(--radius-md); font-size: 13px; font-weight: var(--btn-weight); text-transform: var(--text-transform);
+            cursor: pointer; transition: transform 0.2s var(--ease-fluid), box-shadow 0.2s, border-color 0.2s, color 0.2s; border: none; display: flex; align-items: center; gap: 9px;
+            font-family: 'Inter', sans-serif; letter-spacing: var(--letter);
         }
-        .btn-secondary { background: var(--surface-2); color: var(--text-main); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .btn-secondary { background: var(--surface-2); color: var(--text-main); border: 1px solid var(--border); }
         .btn-secondary:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
-        .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 6px 18px var(--accent-glow); position: relative; overflow: hidden; }
-        .btn-primary::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent); transition: 0.5s; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 24px var(--accent-glow); filter: brightness(1.05); }
-        .btn-primary:hover::after { left: 150%; }
-        body[data-portal="partsgeek"] .btn-primary::before { content: '['; margin-right: 4px; opacity: 0.6; }
-        body[data-portal="partsgeek"] .btn-primary::after { content: ']'; margin-left: 4px; opacity: 0.6; position: static; background: none; width: auto; height: auto; }
-        body[data-portal="partsgeek"] .btn-primary:hover::before, body[data-portal="partsgeek"] .btn-primary:hover::after { opacity: 1; color: #fff; }
+        .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 6px 16px var(--accent-glow); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 22px var(--accent-glow); filter: brightness(1.05); }
 
         /* Loader */
-        .loader-wrap { display: none; margin-top: 26px; animation: fadeUp 0.4s ease forwards; }
-        .loader { height: 5px; background: var(--surface-2); border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
-        .loader-bar { height: 100%; width: 0%; background: var(--accent); transition: width 0.2s linear; box-shadow: 0 0 10px var(--accent); }
+        .loader-wrap { display: none; margin-top: 22px; }
+        .loader { height: 5px; background: var(--surface-2); border-radius: 99px; overflow: hidden; border: 1px solid var(--border); }
+        .loader-bar { height: 100%; width: 0%; background: var(--accent); transition: width 0.2s linear; box-shadow: 0 0 10px var(--accent); border-radius: 99px; }
         .loader-text { margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); font-weight: 700; text-align: right; letter-spacing: 1px; }
-        body[data-portal="turn5"] .loader { height: 8px; background: var(--surface-2); }
-        body[data-portal="turn5"] .loader-bar { background: repeating-linear-gradient(45deg, var(--accent), var(--accent) 10px, var(--accent-spark) 10px, var(--accent-spark) 20px); }
 
         /* =========================================
            RESULTS
            ========================================= */
-        .results-container { display: none; margin-top: 36px; animation: fadeUp 0.6s var(--ease-fluid) forwards; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        .results-container { display: none; margin-top: 32px; }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 24px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
         @media (max-width: 720px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
         .stat-card {
             position: relative; background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-lg);
-            padding: 22px; box-shadow: var(--shadow-sm); transition: transform 0.35s var(--ease-fluid), box-shadow 0.35s, border-color 0.35s; backdrop-filter: blur(12px); overflow: hidden;
+            padding: 20px; box-shadow: var(--shadow-sm); transition: transform 0.25s var(--ease-fluid), box-shadow 0.25s, border-color 0.25s; overflow: hidden;
         }
-        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--stat-color, var(--accent)); opacity: 0.9; }
-        .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--stat-color, var(--accent)); }
-        .s-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-        .s-title { font-size: 11px; color: var(--text-muted); font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; font-family: 'Inter', sans-serif; }
-        .s-icon { width: 28px; height: 28px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--stat-color, var(--accent)); background: var(--stat-soft, var(--accent-glow)); }
-        .s-val { font-size: 34px; font-weight: 800; color: var(--stat-color, var(--text-main)); line-height: 1; font-family: var(--font-ui); }
-        body[data-portal="turn5"] .s-val, body[data-portal="partsgeek"] .s-val { font-family: 'JetBrains Mono', monospace; }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--stat-color, var(--accent)); }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--stat-color, var(--accent)); }
+        .s-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .s-title { font-size: 11px; color: var(--text-muted); font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; }
+        .s-icon { width: 30px; height: 30px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 15px; color: var(--stat-color, var(--accent)); background: var(--stat-soft, var(--accent-glow)); }
+        .s-val { font-size: 34px; font-weight: 800; color: var(--stat-color, var(--text-main)); line-height: 1; font-variant-numeric: tabular-nums; }
 
-        /* Data Tables */
-        .data-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--border); margin-bottom: 24px; padding: 0 10px; flex-wrap: wrap; gap: 14px;}
-        .data-nav { display: flex; gap: 28px; font-family: 'Inter', sans-serif; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+        /* Data tables */
+        .data-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--border); margin-bottom: 4px; padding: 4px 14px 0; flex-wrap: wrap; gap: 14px; }
+        .data-nav { display: flex; gap: 24px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
         .data-nav::-webkit-scrollbar { display: none; }
-        .d-tab { font-size: 13px; font-weight: 700; color: var(--text-muted); padding: 18px 2px 15px; cursor: pointer; transition: 0.3s; position: relative; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        .d-tab { font-size: 13px; font-weight: 700; color: var(--text-muted); padding: 16px 2px 14px; cursor: pointer; transition: color 0.2s; position: relative; letter-spacing: 0.3px; white-space: nowrap; }
         .d-tab:hover { color: var(--text-main); }
         .d-tab.active { color: var(--accent); }
-        .d-tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background: var(--accent); border-radius: 2px; box-shadow: 0 -2px 10px var(--accent-glow); }
+        .d-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: var(--accent); border-radius: 2px; }
+        .d-tab .cnt { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 18px; padding: 0 6px; margin-left: 6px; border-radius: 99px; background: var(--surface-2); font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; }
+        .d-tab.active .cnt { background: var(--accent-glow); color: var(--accent); }
 
-        .table-filters { display: flex; gap: 12px; margin-bottom: 12px; }
+        .table-filters { display: flex; gap: 10px; align-items: center; padding-bottom: 8px; }
         .filter-dropdown {
             background: var(--surface-2); color: var(--text-main); border: 1px solid var(--border);
-            padding: 8px 16px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 700;
-            font-family: var(--font-ui); outline: none; cursor: pointer; transition: all 0.3s;
-            text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 8px 14px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 700;
+            font-family: 'Inter', sans-serif; outline: none; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s;
+            letter-spacing: 0.4px;
         }
-        .filter-dropdown:focus, .filter-dropdown:hover { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+        .filter-dropdown:focus, .filter-dropdown:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
         body[data-theme="dark"] .filter-dropdown option { background: var(--surface-1); }
 
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
-        th { padding: 15px clamp(14px, 3vw, 24px); font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border); white-space: nowrap; font-family: 'Inter', sans-serif; background: var(--surface-2); }
-        td { padding: 16px clamp(14px, 3vw, 24px); font-size: 13px; font-weight: 500; border-bottom: 1px solid var(--border); transition: background 0.2s; }
-        tr:hover td { background: var(--surface-2); }
-        .mono { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
-        .empty-row td { text-align: center; color: var(--text-muted); font-style: italic; padding: 40px; }
+        thead th { position: sticky; top: 0; z-index: 2; }
+        th { padding: 13px clamp(12px, 2.4vw, 20px); font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; border-bottom: 1px solid var(--border); white-space: nowrap; background: var(--surface-3); }
+        td { padding: 14px clamp(12px, 2.4vw, 20px); font-size: 13px; font-weight: 500; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tbody tr:nth-child(even):not(.split-parent):not(.split-child) td { background: color-mix(in srgb, var(--surface-2) 45%, transparent); }
+        tbody tr:hover td { background: var(--surface-2); }
+        .mono { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-variant-numeric: tabular-nums; }
+        .empty-row td { text-align: center; color: var(--text-muted); font-style: italic; padding: 48px; background: transparent !important; }
 
-        /* Split Order UI */
-        .split-parent td { background: var(--accent-glow); font-weight: 800; color: var(--accent); border-bottom: none; border-top: 1px solid var(--border); }
-        .split-child td { border-left: 3px solid var(--accent); background: var(--input-bg); }
+        /* Split order */
+        .split-parent td { background: var(--accent-glow) !important; font-weight: 800; color: var(--accent); border-bottom: none; border-top: 1px solid var(--border); }
+        .split-child td { border-left: 3px solid var(--accent); background: var(--surface-3) !important; }
 
-        /* Status Badges */
-        .badge-st { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: var(--radius-sm); font-size: 10px; font-weight: 800; letter-spacing: 0.4px; font-family: 'Inter', sans-serif; text-transform: uppercase; }
+        /* Status badges */
+        .badge-st { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 99px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; white-space: nowrap; }
         .badge-st::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
         .st-ok { background: var(--ok-soft); color: var(--ok); border: 1px solid var(--ok-line); }
         .st-warn { background: var(--warn-soft); color: var(--warn); border: 1px solid var(--warn-line); }
         .st-err { background: var(--err-soft); color: var(--err); border: 1px solid var(--err-line); }
 
-        .copy-btn { opacity: 0; color: var(--text-muted); cursor: pointer; transition: 0.2s; margin-left: 8px; font-size: 13px; }
-        tr:hover .copy-btn, .split-parent:hover .copy-btn { opacity: 0.8; }
-        .copy-btn:hover { color: var(--accent); transform: scale(1.2); opacity: 1; }
-        .btn-copy-col { background: transparent; border: 1px solid var(--border); color: var(--text-muted); font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: var(--radius-sm); margin-left: 10px; cursor: pointer; transition: 0.3s; }
+        /* Copy tools */
+        .copy-btn { opacity: 0; color: var(--text-muted); cursor: pointer; transition: opacity 0.15s, color 0.15s, transform 0.15s; margin-left: 8px; font-size: 13px; }
+        tr:hover .copy-btn, .split-parent:hover .copy-btn { opacity: 0.7; }
+        .copy-btn:hover { color: var(--accent); transform: scale(1.15); opacity: 1; }
+        .btn-copy-col { background: transparent; border: 1px solid var(--border); color: var(--text-muted); font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: var(--radius-sm); margin-left: 8px; cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; vertical-align: middle; }
         .btn-copy-col:hover { background: var(--surface-2); color: var(--accent); border-color: var(--accent); }
         .btn-copy-col.copied { background: var(--accent); color: #fff; border-color: var(--accent); }
 
         .concat-btn { display: none; margin-left: 5px; }
         body[data-portal="walmart"] .concat-btn { display: inline-block; }
 
-        /* Transition Engine */
-        #portal-transit { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; }
-        .t-walmart { position: absolute; top: 0; bottom: 0; right: 0; width: 0vw; background: #0071CE; transition: width 0.6s var(--ease-fluid); }
-        .t-walmart::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #FFC220; box-shadow: 0 0 20px #FFC220; }
-        .t-walmart.active { width: 100vw; left: 0; right: auto; }
-        .t-turn5-top, .t-turn5-bot { position: absolute; width: 100vw; height: 50vh; background: #111; transition: transform 0.4s var(--ease-mechanical); z-index: 2; }
-        .t-turn5-top { top: 0; transform: translateY(-100%); border-bottom: 2px solid #333; }
-        .t-turn5-bot { bottom: 0; transform: translateY(100%); border-top: 2px solid #333; }
-        .t-turn5-laser { position: absolute; top: 50%; left: 0; width: 100vw; height: 4px; background: #E53935; box-shadow: 0 0 30px #E53935, 0 0 60px #E53935; transform: translateY(-50%) scaleX(0); z-index: 3; transition: transform 0.3s ease; transform-origin: center; }
-        .t-turn5-top.active, .t-turn5-bot.active { transform: translateY(0); }
-        .t-turn5-laser.active { transform: translateY(-50%) scaleX(1); }
-        .t-pg-overlay { position: absolute; inset: 0; background: rgba(2,10,4,0.9); backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s; z-index: 1; }
-        .t-pg-scan { position: absolute; top: -10px; left: 0; width: 100vw; height: 3px; background: #00E676; box-shadow: 0 0 20px #00E676, 0 0 40px #00E676; opacity: 0; z-index: 2; }
-        .t-pg-overlay.active { opacity: 1; }
-        .t-pg-scan.active { opacity: 1; animation: scanDown 0.6s linear forwards; }
-        @keyframes scanDown { 0% { top: -10px; } 100% { top: 100vh; } }
-
         /* Stagger */
-        .stagger-1 { opacity: 0; transform: translateY(18px); transition: all 0.6s var(--ease-fluid) 0.1s; }
-        .stagger-2 { opacity: 0; transform: translateY(18px); transition: all 0.6s var(--ease-fluid) 0.2s; }
-        .stagger-3 { opacity: 0; transform: translateY(18px); transition: all 0.6s var(--ease-fluid) 0.3s; }
+        .stagger-1, .stagger-2, .stagger-3 { opacity: 0; transform: translateY(16px); transition: opacity 0.5s var(--ease-fluid), transform 0.5s var(--ease-fluid); }
+        .stagger-2 { transition-delay: 0.08s; } .stagger-3 { transition-delay: 0.16s; }
         .stagger-in { opacity: 1; transform: translateY(0); }
 
-        /* T5 Checkbox */
-        .t5-check-wrap { display: none; margin-right: 12px; vertical-align: middle; }
+        /* Turn5 row-select checkbox */
+        .t5-check-wrap { display: none; margin-right: 10px; vertical-align: middle; }
         body[data-portal="turn5"] .t5-check-wrap { display: inline-block; }
-        .t5-chk { appearance: none; width: 16px; height: 16px; border: 2px solid var(--text-muted); border-radius: 2px; background: transparent; cursor: pointer; transition: 0.2s; position: relative; margin: 0; outline: none; }
+        .t5-chk { appearance: none; width: 16px; height: 16px; border: 2px solid var(--text-muted); border-radius: 3px; background: transparent; cursor: pointer; transition: 0.2s; position: relative; margin: 0; outline: none; }
         .t5-chk:hover { border-color: var(--accent); }
         .t5-chk:checked { background: var(--accent); border-color: var(--accent); }
-        .t5-chk:checked::after { content: ''; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+        .t5-chk:checked::after { content: ''; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
         body[data-portal="turn5"] tr.row-highlight td { background: var(--accent-glow) !important; }
         body[data-portal="turn5"] tr.row-highlight td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 
         @media (prefers-reduced-motion: reduce) {
-            * { animation: none !important; transition-duration: 0.15s !important; }
+            * { animation: none !important; transition-duration: 0.12s !important; }
         }
     </style>
 </head>
 <body data-theme="light" data-portal="walmart">
 
-    <!-- ENVIRONMENTAL ENGINE -->
-    <div id="origin-environments">
-        <div class="env-layer env-walmart">
-            <div class="wm-ambient"></div>
-            <div class="wm-arc wm-arc-1"></div>
-            <div class="wm-arc wm-arc-2"></div>
-            <div class="wm-spark"></div>
-        </div>
-        <div class="env-layer env-turn5">
-            <div class="t5-ambient"></div>
-            <div class="t5-hatch"></div>
-            <div class="t5-ring"></div>
-        </div>
-        <div class="env-layer env-partsgeek">
-            <div class="pg-ambient"></div>
-            <div class="pg-grid"></div>
-            <div class="pg-node n1"></div>
-            <div class="pg-node n2"></div>
-            <div class="pg-scan-field"></div>
-        </div>
+    <!-- AMBIENT BACKGROUND -->
+    <div id="origin-bg">
+        <div class="bg-mesh"></div>
+        <div class="bg-glow g1"></div>
+        <div class="bg-glow g2"></div>
     </div>
 
-    <!-- TRANSITION OVERLAYS -->
-    <div id="portal-transit">
-        <div id="t-walmart" class="t-walmart"></div>
-        <div id="t-turn5-top" class="t-turn5-top"></div>
-        <div id="t-turn5-bot" class="t-turn5-bot"></div>
-        <div id="t-turn5-laser" class="t-turn5-laser"></div>
-        <div id="t-pg-overlay" class="t-pg-overlay"></div>
-        <div id="t-pg-scan" class="t-pg-scan"></div>
-    </div>
+    <!-- PORTAL TRANSITION SWEEP -->
+    <div id="portal-sweep"></div>
 
     <!-- NAVBAR -->
     <nav class="nav">
-        <div class="nav-logo"><i class="bi bi-box-seam-fill"></i> ORIGIN</div>
+        <div class="nav-logo">
+            <span class="mark" id="origin-mark"></span> ORIGIN
+        </div>
         <div class="nav-actions">
-            <button class="theme-btn" onclick="toggleTheme()" title="Toggle Interface Mode">
+            <button class="theme-btn" onclick="toggleTheme()" title="Toggle Interface Mode" aria-label="Toggle theme">
                 <i id="theme-icon" class="bi bi-sun-fill"></i>
             </button>
             <div class="user-badge"><span></span> {{ company }} System</div>
@@ -393,19 +319,23 @@
 
     <!-- PORTAL SELECTOR -->
     <div class="portal-nav stagger-1">
-        <div class="portal-tab active" onclick="switchPortal('walmart', this)"><i class="bi bi-shop"></i> WALMART</div>
-        <div class="portal-tab" onclick="switchPortal('turn5', this)"><i class="bi bi-cone-striped"></i> TURN5</div>
-        <div class="portal-tab" onclick="switchPortal('partsgeek', this)"><i class="bi bi-cpu"></i> PARTSGEEK</div>
+        <div class="portal-tab active" data-portal-tab="walmart" onclick="switchPortal('walmart', this)"><span class="pico"></span> Walmart</div>
+        <div class="portal-tab" data-portal-tab="turn5" onclick="switchPortal('turn5', this)"><span class="pico"></span> Turn5</div>
+        <div class="portal-tab" data-portal-tab="partsgeek" onclick="switchPortal('partsgeek', this)"><span class="pico"></span> PartsGeek</div>
     </div>
 
     <!-- WORKSPACE -->
     <div class="workspace">
-        <div class="header stagger-2" id="ws-header">
-            <h1>Walmart Retail Operations</h1>
-            <p>Standard fulfillment pipeline. Awaiting order identifiers.</p>
+        <div class="brand-head stagger-2" id="ws-header">
+            <span class="brand-mark" id="brand-mark"></span>
+            <span class="brand-name" id="brand-name">Walmart</span>
         </div>
 
         <div class="card stagger-3" id="input-module">
+            <div class="io-bar">
+                <div class="io-label"><i class="bi bi-terminal"></i> Order Input</div>
+                <button class="io-clear" onclick="clearOrders()"><i class="bi bi-eraser"></i> Clear</button>
+            </div>
             <div class="editor-wrap">
                 <textarea id="orders" class="editor" placeholder="> Paste Walmart order numbers, one per line..." oninput="updateStats()"></textarea>
             </div>
@@ -453,9 +383,9 @@
             <div class="card" style="padding: 0; overflow: hidden;">
                 <div class="data-header">
                     <div class="data-nav">
-                        <div class="d-tab active" onclick="setTab('shipped', this)">Shipped (<span id="tOk">0</span>)</div>
-                        <div class="d-tab" onclick="setTab('notracking', this)">No Tracking (<span id="tWarn">0</span>)</div>
-                        <div class="d-tab" onclick="setTab('notfound', this)">Did Not Show (<span id="tErr">0</span>)</div>
+                        <div class="d-tab active" onclick="setTab('shipped', this)">Shipped <span class="cnt" id="tOk">0</span></div>
+                        <div class="d-tab" onclick="setTab('notracking', this)">No Tracking <span class="cnt" id="tWarn">0</span></div>
+                        <div class="d-tab" onclick="setTab('notfound', this)">Did Not Show <span class="cnt" id="tErr">0</span></div>
                     </div>
                     <div class="table-filters">
                         <select id="filter-facility" class="filter-dropdown" onchange="applyFilters()">
@@ -470,25 +400,25 @@
                 <div class="table-wrap">
                     <table id="tbl-shipped">
                         <thead><tr>
-                            <th>Origin PO 
+                            <th>Origin PO
                                 <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 0, this)"><i class="bi bi-files"></i></button>
                                 <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-shipped', 0, this)">Concat</button>
                             </th>
-                            <th>Deposco SO 
+                            <th>Deposco SO
                                 <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 1, this)"><i class="bi bi-files"></i></button>
                                 <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-shipped', 1, this)">Concat</button>
                             </th>
-                            <th>Cust Order # 
+                            <th>Cust Order #
                                 <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 2, this)"><i class="bi bi-files"></i></button>
                                 <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-shipped', 2, this)">Concat</button>
                             </th>
-                            <th>Combined PO 
+                            <th>Combined PO
                                 <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 3, this)"><i class="bi bi-files"></i></button>
                                 <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-shipped', 3, this)">Concat</button>
                             </th>
                             <th>Facility</th>
                             <th>Created date</th>
-                            <th>Tracking number 
+                            <th>Tracking number
                                 <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 6, this)"><i class="bi bi-files"></i></button>
                             </th>
                             <th>Status</th>
@@ -497,19 +427,19 @@
                     </table>
                     <table id="tbl-notracking" style="display:none;">
                         <thead><tr>
-                            <th>Origin PO 
+                            <th>Origin PO
                                 <button class="btn-copy-col" onclick="copyColumn('bd-notracking', 0, this)"><i class="bi bi-files"></i></button>
                                 <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notracking', 0, this)">Concat</button>
                             </th>
-                            <th>Deposco SO 
+                            <th>Deposco SO
                                 <button class="btn-copy-col" onclick="copyColumn('bd-notracking', 1, this)"><i class="bi bi-files"></i></button>
                                 <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notracking', 1, this)">Concat</button>
                             </th>
-                            <th>Cust Order # 
+                            <th>Cust Order #
                                 <button class="btn-copy-col" onclick="copyColumn('bd-notracking', 2, this)"><i class="bi bi-files"></i></button>
                                 <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notracking', 2, this)">Concat</button>
                             </th>
-                            <th>Combined PO 
+                            <th>Combined PO
                                 <button class="btn-copy-col" onclick="copyColumn('bd-notracking', 3, this)"><i class="bi bi-files"></i></button>
                                 <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notracking', 3, this)">Concat</button>
                             </th>
@@ -522,15 +452,15 @@
                     </table>
                     <table id="tbl-notfound" style="display:none;">
                         <thead><tr>
-                            <th>Origin PO 
+                            <th>Origin PO
                                 <button class="btn-copy-col" onclick="copyColumn('bd-notfound', 0, this)"><i class="bi bi-files"></i></button>
                                 <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notfound', 0, this)">Concat</button>
                             </th>
-                            <th>Cust Order # 
+                            <th>Cust Order #
                                 <button class="btn-copy-col" onclick="copyColumn('bd-notfound', 1, this)"><i class="bi bi-files"></i></button>
                                 <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notfound', 1, this)">Concat</button>
                             </th>
-                            <th>Combined PO 
+                            <th>Combined PO
                                 <button class="btn-copy-col" onclick="copyColumn('bd-notfound', 2, this)"><i class="bi bi-files"></i></button>
                                 <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notfound', 2, this)">Concat</button>
                             </th>
@@ -545,13 +475,43 @@
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
+        // =========================================
+        // ICON SET (clean inline SVGs)
+        // =========================================
+        const ICON = {
+            origin: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8.4"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/><path d="M12 1.6v3.4M12 19v3.4M1.6 12h3.4M19 12h3.4"/></svg>`,
+            // Walmart-style 6-point spark
+            walmart: `<svg viewBox="0 0 24 24" width="19" height="19" stroke="currentColor" stroke-width="2.7" stroke-linecap="round"><line x1="12" y1="3.4" x2="12" y2="8.2"/><line x1="12" y1="15.8" x2="12" y2="20.6"/><line x1="3.9" y1="7.7" x2="8.05" y2="10.1"/><line x1="15.95" y1="13.9" x2="20.1" y2="16.3"/><line x1="20.1" y1="7.7" x2="15.95" y2="10.1"/><line x1="8.05" y1="13.9" x2="3.9" y2="16.3"/></svg>`,
+            // Turn5 performance gauge
+            turn5: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 17.5a9 9 0 1 1 16.8 0"/><path d="M12 15.5l4.6-4.3"/><circle cx="12" cy="15.5" r="1.4" fill="currentColor" stroke="none"/></svg>`,
+            // PartsGeek diagnostic terminal
+            partsgeek: `<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="4.4" width="18.8" height="15.2" rx="2.4"/><path d="M6.4 9.4l3 2.6-3 2.6"/><path d="M12.4 15h5"/></svg>`
+        };
+
+        const PORTAL = {
+            walmart:   { name: 'Walmart',   placeholder: '> Paste Walmart order numbers, one per line...',        loader: 'PROCESSING ORDERS...',    upload: true },
+            turn5:     { name: 'Turn5',     placeholder: '> Paste Turn5 order numbers, one per line...',          loader: 'PROCESSING LOGISTICS...', upload: true },
+            partsgeek: { name: 'PartsGeek', placeholder: 'root@origin:~$ PASTE RAW TABLE DATA\nScanning for [PG1...] strings...', loader: 'SCANNING DATA STREAM...',  upload: false }
+        };
+
+        // Paint static icons
+        document.getElementById('origin-mark').innerHTML = ICON.origin;
+        document.querySelectorAll('.portal-tab[data-portal-tab]').forEach(tab => {
+            tab.querySelector('.pico').innerHTML = ICON[tab.getAttribute('data-portal-tab')];
+        });
+        function paintHeader(portal) {
+            document.getElementById('brand-mark').innerHTML = ICON[portal];
+            document.getElementById('brand-name').innerText = PORTAL[portal].name;
+        }
+        paintHeader('walmart');
+
         // --- Smart Global Order Mapping Engine ---
         window.orderMapping = {};
 
         // --- Init Stagger Animations ---
-        setTimeout(() => {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
             document.querySelectorAll('.stagger-1, .stagger-2, .stagger-3').forEach(el => el.classList.add('stagger-in'));
-        }, 50);
+        }));
 
         // --- Theme Engine ---
         function toggleTheme() {
@@ -572,69 +532,44 @@
         document.body.setAttribute('data-theme', savedTheme);
         document.getElementById('theme-icon').className = savedTheme === 'dark' ? 'bi bi-moon-stars-fill' : 'bi bi-sun-fill';
 
-        // --- Portal Transition Engine ---
+        // --- Portal Transition Engine (unified sweep + blur) ---
         let currentPortal = 'walmart';
+        let switching = false;
 
         async function switchPortal(portal, el) {
-            if (currentPortal === portal) return;
+            if (currentPortal === portal || switching) return;
+            switching = true;
 
-            if (portal === 'walmart') {
-                document.getElementById('t-walmart').classList.add('active');
-            } else if (portal === 'turn5') {
-                document.getElementById('t-turn5-top').classList.add('active');
-                document.getElementById('t-turn5-bot').classList.add('active');
-                setTimeout(() => document.getElementById('t-turn5-laser').classList.add('active'), 350);
-            } else if (portal === 'partsgeek') {
-                document.getElementById('t-pg-overlay').classList.add('active');
-                document.getElementById('t-pg-scan').classList.add('active');
-            }
+            const sweep = document.getElementById('portal-sweep');
+            const ws = document.querySelector('.workspace');
 
-            document.querySelectorAll('.stagger-in').forEach(e => e.classList.remove('stagger-in'));
+            // trigger the accent sweep line
+            sweep.classList.remove('go'); void sweep.offsetWidth; sweep.classList.add('go');
+            setTimeout(() => sweep.classList.remove('go'), 640);
+
+            // fade/blur the workspace out
+            ws.classList.add('leaving');
             document.getElementById('results').style.display = 'none';
             document.getElementById('orders').value = '';
             updateStats();
 
-            await new Promise(r => setTimeout(r, 600));
+            await new Promise(r => setTimeout(r, 300));
 
+            // swap identity
             currentPortal = portal;
             document.querySelectorAll('.portal-tab').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
             document.body.setAttribute('data-portal', portal);
 
-            const hd = document.getElementById('ws-header');
-            const ed = document.getElementById('orders');
-            const up = document.getElementById('btn-upload');
-            const lTxt = document.getElementById('loader-txt');
+            const cfg = PORTAL[portal];
+            paintHeader(portal);
+            document.getElementById('orders').placeholder = cfg.placeholder;
+            document.getElementById('btn-upload').style.display = cfg.upload ? 'flex' : 'none';
+            document.getElementById('loader-txt').innerText = cfg.loader;
 
-            if (portal === 'walmart') {
-                hd.innerHTML = `<h1>Walmart Retail Operations</h1><p>Standard fulfillment pipeline. Awaiting order identifiers.</p>`;
-                ed.placeholder = "> Paste Walmart order numbers, one per line..."; up.style.display = 'flex'; lTxt.innerText = "PROCESSING ORDERS...";
-            } else if (portal === 'turn5') {
-                hd.innerHTML = `<h1>Turn5 Logistics Control</h1><p>Automotive freight and LTL routing module.</p>`;
-                ed.placeholder = "> Paste Turn5 order numbers, one per line..."; up.style.display = 'flex'; lTxt.innerText = "PROCESSING LOGISTICS...";
-            } else if (portal === 'partsgeek') {
-                hd.innerHTML = `<h1>PartsGeek Diagnostic Terminal</h1><p>Legacy catalog parsing and data extraction enabled.</p>`;
-                ed.placeholder = "root@origin:~$ PASTE RAW TABLE DATA\nScanning for [PG1...] strings..."; up.style.display = 'none'; lTxt.innerText = "SCANNING DATA STREAM...";
-            }
-
-            if (portal === 'walmart') {
-                document.getElementById('t-walmart').style.left = '0';
-                document.getElementById('t-walmart').style.width = '0vw';
-                setTimeout(() => { document.getElementById('t-walmart').classList.remove('active'); document.getElementById('t-walmart').style.left = ''; document.getElementById('t-walmart').style.right = '0'; }, 600);
-            } else if (portal === 'turn5') {
-                document.getElementById('t-turn5-laser').classList.remove('active');
-                setTimeout(() => {
-                    document.getElementById('t-turn5-top').classList.remove('active');
-                    document.getElementById('t-turn5-bot').classList.remove('active');
-                }, 200);
-            } else if (portal === 'partsgeek') {
-                document.getElementById('t-pg-overlay').classList.remove('active');
-                document.getElementById('t-pg-scan').classList.remove('active');
-            }
-
-            setTimeout(() => {
-                document.querySelectorAll('.stagger-1, .stagger-2, .stagger-3').forEach(e => e.classList.add('stagger-in'));
-            }, 100);
+            // fade back in
+            requestAnimationFrame(() => ws.classList.remove('leaving'));
+            setTimeout(() => { switching = false; }, 320);
         }
 
         // --- I/O Engine ---
@@ -644,7 +579,7 @@
             if (currentPortal === 'partsgeek') {
                 count = new Set(val.match(/PG1\d+/g) || []).size;
             } else {
-                window.orderMapping = {}; 
+                window.orderMapping = {};
                 const lines = val.split(/\n/).filter(l => l.trim());
                 count = lines.length;
                 lines.forEach(line => {
@@ -657,6 +592,13 @@
             document.getElementById('node-count').innerText = count;
         }
 
+        function clearOrders() {
+            document.getElementById('orders').value = '';
+            window.orderMapping = {};
+            updateStats();
+            document.getElementById('orders').focus();
+        }
+
         function handleExcel(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -665,22 +607,22 @@
                 const workbook = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
                 const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
                 if (!rows.length) return;
-                
+
                 const header = rows[0].map(h => String(h).trim().toLowerCase());
                 let poCol = header.findIndex(h => h === 'po#' || h === 'po' || h.includes('po number'));
                 if (poCol === -1) poCol = 0;
-                
+
                 let orderCol = header.findIndex(h => h === 'order#' || h === 'order number' || h.includes('order'));
 
                 window.orderMapping = {};
                 const linesToPaste = [];
                 const seenPos = new Set();
-                
+
                 for (let i = 1; i < rows.length; i++) {
                     const r = rows[i];
                     const rawPo = r[poCol];
                     if (rawPo === undefined || rawPo === null) continue;
-                    
+
                     const poVal = String(rawPo).trim();
                     if (poVal && !seenPos.has(poVal)) {
                         seenPos.add(poVal);
@@ -693,7 +635,7 @@
                         }
                     }
                 }
-                
+
                 document.getElementById('orders').value = linesToPaste.join('\n');
                 updateStats();
                 e.target.value = '';
@@ -768,8 +710,8 @@
             const statuses = new Set();
 
             [...data.shipped, ...data.no_tracking].forEach(item => {
-                if(item.ship_from) facilities.add(item.ship_from);
-                if(item.status) statuses.add(item.status);
+                if (item.ship_from) facilities.add(item.ship_from);
+                if (item.status) statuses.add(item.status);
             });
 
             const facSelect = document.getElementById('filter-facility');
@@ -803,14 +745,15 @@
 
             renderGroupedTable('bd-shipped', fShipped, 'shipped');
             renderGroupedTable('bd-notracking', fNoTrack, 'notracking');
-            
+
             let t5Checkbox = `<span class="t5-check-wrap"><input type="checkbox" class="t5-chk" onclick="this.closest('tr').classList.toggle('row-highlight', this.checked)"></span>`;
-            
+
             if (fNotFound.length > 0) {
-                document.getElementById('bd-notfound').innerHTML = fNotFound.map(r => {
+                const sortedNotFound = [...fNotFound].sort((a, b) => String(a.order).localeCompare(String(b.order), undefined, { numeric: true }));
+                document.getElementById('bd-notfound').innerHTML = sortedNotFound.map(r => {
                     let mappedOrder = window.orderMapping && window.orderMapping[r.order] ? window.orderMapping[r.order] : '';
                     let coHtml = mappedOrder ? `${mappedOrder} <i class="bi bi-copy copy-btn" onclick="copyData('${mappedOrder}', this)"></i>` : `<span style="color:var(--text-muted); font-style:italic">N/A</span>`;
-                    
+
                     let combinedId = mappedOrder ? `${r.order}--${mappedOrder}` : `${r.order}--N/A`;
                     let combinedHtml = mappedOrder ? `${r.order}<span style="color:var(--text-muted)">--${mappedOrder}</span> <i class="bi bi-copy copy-btn" onclick="copyData('${combinedId}', this)"></i>` : `<span style="color:var(--text-muted); font-style:italic">N/A</span>`;
 
@@ -838,20 +781,24 @@
                 grouped[item.order].push(item);
             });
 
+            // Sort orders naturally so output is tidy and predictable
+            const orderedKeys = Object.keys(grouped).sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
+
             let html = '';
-            for (const [order, items] of Object.entries(grouped)) {
+            for (const order of orderedKeys) {
+                const items = grouped[order];
                 const isSplit = items.length > 1;
-                
+
                 if (isSplit) {
                     html += `<tr class="split-parent">
                         <td colspan="${type === 'shipped' || type === 'notracking' ? 8 : 4}">
                             <i class="bi bi-diagram-2"></i> ${order}
                             <i class="bi bi-copy copy-btn" onclick="copyData('${order}', this)"></i>
-                            <span style="float:right; font-size:10px; color:var(--text-muted); font-family:var(--font-ui); font-weight:700; text-transform:uppercase;">${items.length} Lines</span>
+                            <span style="float:right; font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">${items.length} Lines</span>
                         </td>
                     </tr>`;
                 }
-                
+
                 items.forEach((row, i) => {
                     let branch = isSplit ? (i === items.length - 1 ? '&#9492;&#9472; ' : '&#9500;&#9472; ') : '';
                     let rowClass = isSplit ? 'split-child' : '';
@@ -864,7 +811,7 @@
                         displayCustOrder = displayCustOrder.split('--').pop();
                         rawCustOrder = displayCustOrder;
                     }
-                    
+
                     // Fallback to order mapping if empty
                     if ((!rawCustOrder || rawCustOrder === 'N/A') && window.orderMapping && window.orderMapping[order]) {
                         rawCustOrder = window.orderMapping[order];
@@ -947,10 +894,10 @@
                 });
                 if (res.status === 401) { window.location.href = '/'; return; }
                 const data = await res.json();
-                
+
                 clearInterval(sim); fill.style.width = '100%';
                 if (currentPortal === 'partsgeek') txt.innerText = `SCAN COMPLETE [100%]`;
-                
+
                 if (data.error) throw new Error(data.error);
 
                 lastResponseData = data;
@@ -958,9 +905,9 @@
                 applyFilters();
 
                 document.getElementById('st-tot').innerText = data.shipped.length + data.no_tracking.length + data.not_found.length;
-                document.getElementById('st-ok').innerText = data.shipped.length; 
-                document.getElementById('st-warn').innerText = data.no_tracking.length; 
-                document.getElementById('st-err').innerText = data.not_found.length; 
+                document.getElementById('st-ok').innerText = data.shipped.length;
+                document.getElementById('st-warn').innerText = data.no_tracking.length;
+                document.getElementById('st-err').innerText = data.not_found.length;
 
                 setTimeout(() => {
                     document.getElementById('loader-wrap').style.display = 'none';
