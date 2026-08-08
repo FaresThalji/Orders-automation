@@ -14,7 +14,7 @@
             --ease-fluid: cubic-bezier(0.16, 1, 0.3, 1);
             --ease-mechanical: cubic-bezier(0.85, 0, 0.15, 1);
             --env-transition: opacity 1.2s var(--ease-fluid), transform 1.6s var(--ease-fluid);
-            /* Shared semantic status colors */
+            /* Shared semantic status colors (kept legible in both themes) */
             --ok: #10B981; --ok-soft: rgba(16,185,129,0.14); --ok-line: rgba(16,185,129,0.35);
             --warn: #F59E0B; --warn-soft: rgba(245,158,11,0.14); --warn-line: rgba(245,158,11,0.35);
             --err: #EF4444; --err-soft: rgba(239,68,68,0.14); --err-line: rgba(239,68,68,0.35);
@@ -116,7 +116,7 @@
         ::selection { background: var(--accent); color: #fff; }
 
         /* =========================================
-           BACKGROUND ENVIRONMENTS
+           BACKGROUND ENVIRONMENTS (calmer, low-noise)
            ========================================= */
         #origin-environments { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
         .env-layer { position: absolute; inset: 0; opacity: 0; transition: var(--env-transition); transform: scale(1.04); will-change: opacity, transform; }
@@ -259,9 +259,10 @@
         .s-val { font-size: 34px; font-weight: 800; color: var(--stat-color, var(--text-main)); line-height: 1; font-family: var(--font-ui); }
         body[data-portal="turn5"] .s-val, body[data-portal="partsgeek"] .s-val { font-family: 'JetBrains Mono', monospace; }
 
-        /* Dynamic Table Filters */
+        /* Data Tables */
         .data-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--border); margin-bottom: 24px; padding: 0 10px; flex-wrap: wrap; gap: 14px;}
-        .data-nav { display: flex; gap: 28px; font-family: 'Inter', sans-serif; overflow-x: auto; }
+        .data-nav { display: flex; gap: 28px; font-family: 'Inter', sans-serif; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+        .data-nav::-webkit-scrollbar { display: none; }
         .d-tab { font-size: 13px; font-weight: 700; color: var(--text-muted); padding: 18px 2px 15px; cursor: pointer; transition: 0.3s; position: relative; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
         .d-tab:hover { color: var(--text-main); }
         .d-tab.active { color: var(--accent); }
@@ -289,23 +290,6 @@
         .split-parent td { background: var(--accent-glow); font-weight: 800; color: var(--accent); border-bottom: none; border-top: 1px solid var(--border); }
         .split-child td { border-left: 3px solid var(--accent); background: var(--input-bg); }
 
-        /* --- TURN5 SPECIFIC CHECKBOX HIGHLIGHTING --- */
-        .t5-check-wrap { display: none; margin-right: 12px; vertical-align: middle; }
-        body[data-portal="turn5"] .t5-check-wrap { display: inline-block; }
-        .t5-chk {
-            appearance: none; width: 16px; height: 16px; border: 2px solid var(--text-muted);
-            border-radius: 2px; background: transparent; cursor: pointer; transition: 0.2s;
-            position: relative; margin: 0; outline: none;
-        }
-        .t5-chk:hover { border-color: var(--accent); }
-        .t5-chk:checked { background: var(--accent); border-color: var(--accent); }
-        .t5-chk:checked::after {
-            content: ''; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px;
-            border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg);
-        }
-        body[data-portal="turn5"] tr.row-highlight td { background: var(--accent-glow) !important; }
-        body[data-portal="turn5"] tr.row-highlight td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
-
         /* Status Badges */
         .badge-st { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: var(--radius-sm); font-size: 10px; font-weight: 800; letter-spacing: 0.4px; font-family: 'Inter', sans-serif; text-transform: uppercase; }
         .badge-st::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
@@ -313,11 +297,9 @@
         .st-warn { background: var(--warn-soft); color: var(--warn); border: 1px solid var(--warn-line); }
         .st-err { background: var(--err-soft); color: var(--err); border: 1px solid var(--err-line); }
 
-        /* Copy & Concat Buttons */
         .copy-btn { opacity: 0; color: var(--text-muted); cursor: pointer; transition: 0.2s; margin-left: 8px; font-size: 13px; }
         tr:hover .copy-btn, .split-parent:hover .copy-btn { opacity: 0.8; }
         .copy-btn:hover { color: var(--accent); transform: scale(1.2); opacity: 1; }
-        
         .btn-copy-col { background: transparent; border: 1px solid var(--border); color: var(--text-muted); font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: var(--radius-sm); margin-left: 10px; cursor: pointer; transition: 0.3s; }
         .btn-copy-col:hover { background: var(--surface-2); color: var(--accent); border-color: var(--accent); }
         .btn-copy-col.copied { background: var(--accent); color: #fff; border-color: var(--accent); }
@@ -325,7 +307,7 @@
         .concat-btn { display: none; margin-left: 5px; }
         body[data-portal="walmart"] .concat-btn { display: inline-block; }
 
-        /* Transition Engine Overlays */
+        /* Transition Engine */
         #portal-transit { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; }
         .t-walmart { position: absolute; top: 0; bottom: 0; right: 0; width: 0vw; background: #0071CE; transition: width 0.6s var(--ease-fluid); }
         .t-walmart::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #FFC220; box-shadow: 0 0 20px #FFC220; }
@@ -347,6 +329,16 @@
         .stagger-2 { opacity: 0; transform: translateY(18px); transition: all 0.6s var(--ease-fluid) 0.2s; }
         .stagger-3 { opacity: 0; transform: translateY(18px); transition: all 0.6s var(--ease-fluid) 0.3s; }
         .stagger-in { opacity: 1; transform: translateY(0); }
+
+        /* T5 Checkbox */
+        .t5-check-wrap { display: none; margin-right: 12px; vertical-align: middle; }
+        body[data-portal="turn5"] .t5-check-wrap { display: inline-block; }
+        .t5-chk { appearance: none; width: 16px; height: 16px; border: 2px solid var(--text-muted); border-radius: 2px; background: transparent; cursor: pointer; transition: 0.2s; position: relative; margin: 0; outline: none; }
+        .t5-chk:hover { border-color: var(--accent); }
+        .t5-chk:checked { background: var(--accent); border-color: var(--accent); }
+        .t5-chk:checked::after { content: ''; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+        body[data-portal="turn5"] tr.row-highlight td { background: var(--accent-glow) !important; }
+        body[data-portal="turn5"] tr.row-highlight td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 
         @media (prefers-reduced-motion: reduce) {
             * { animation: none !important; transition-duration: 0.15s !important; }
@@ -465,7 +457,6 @@
                         <div class="d-tab" onclick="setTab('notracking', this)">No Tracking (<span id="tWarn">0</span>)</div>
                         <div class="d-tab" onclick="setTab('notfound', this)">Did Not Show (<span id="tErr">0</span>)</div>
                     </div>
-                    <!-- Live Table Filters -->
                     <div class="table-filters">
                         <select id="filter-facility" class="filter-dropdown" onchange="applyFilters()">
                             <option value="ALL">ALL FACILITIES</option>
@@ -491,10 +482,14 @@
                                 <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 2, this)"><i class="bi bi-files"></i></button>
                                 <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-shipped', 2, this)">Concat</button>
                             </th>
+                            <th>Combined PO 
+                                <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 3, this)"><i class="bi bi-files"></i></button>
+                                <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-shipped', 3, this)">Concat</button>
+                            </th>
                             <th>Facility</th>
                             <th>Created date</th>
                             <th>Tracking number 
-                                <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 5, this)"><i class="bi bi-files"></i></button>
+                                <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 6, this)"><i class="bi bi-files"></i></button>
                             </th>
                             <th>Status</th>
                         </tr></thead>
@@ -514,6 +509,10 @@
                                 <button class="btn-copy-col" onclick="copyColumn('bd-notracking', 2, this)"><i class="bi bi-files"></i></button>
                                 <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notracking', 2, this)">Concat</button>
                             </th>
+                            <th>Combined PO 
+                                <button class="btn-copy-col" onclick="copyColumn('bd-notracking', 3, this)"><i class="bi bi-files"></i></button>
+                                <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notracking', 3, this)">Concat</button>
+                            </th>
                             <th>Facility</th>
                             <th>Created date</th>
                             <th>System Log</th>
@@ -527,6 +526,14 @@
                                 <button class="btn-copy-col" onclick="copyColumn('bd-notfound', 0, this)"><i class="bi bi-files"></i></button>
                                 <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notfound', 0, this)">Concat</button>
                             </th>
+                            <th>Cust Order # 
+                                <button class="btn-copy-col" onclick="copyColumn('bd-notfound', 1, this)"><i class="bi bi-files"></i></button>
+                                <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notfound', 1, this)">Concat</button>
+                            </th>
+                            <th>Combined PO 
+                                <button class="btn-copy-col" onclick="copyColumn('bd-notfound', 2, this)"><i class="bi bi-files"></i></button>
+                                <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notfound', 2, this)">Concat</button>
+                            </th>
                             <th>System Log</th>
                         </tr></thead>
                         <tbody id="bd-notfound"></tbody>
@@ -538,14 +545,17 @@
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
+        // --- Smart Global Order Mapping Engine ---
+        window.orderMapping = {};
+
         // --- Init Stagger Animations ---
         setTimeout(() => {
             document.querySelectorAll('.stagger-1, .stagger-2, .stagger-3').forEach(el => el.classList.add('stagger-in'));
         }, 50);
 
-        // --- Theme Engine (Defaults to Light) ---
+        // --- Theme Engine ---
         function toggleTheme() {
-            const current = document.documentElement.getAttribute('data-theme') || 'light';
+            const current = document.body.getAttribute('data-theme') || 'light';
             const target = current === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', target);
             document.body.setAttribute('data-theme', target);
@@ -557,8 +567,6 @@
                 icon.style.transform = 'rotate(0deg) scale(1)';
             }, 150);
         }
-        
-        // Strict default to Light Mode if nothing saved
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         document.body.setAttribute('data-theme', savedTheme);
@@ -636,7 +644,15 @@
             if (currentPortal === 'partsgeek') {
                 count = new Set(val.match(/PG1\d+/g) || []).size;
             } else {
-                count = val.split(/\n/).filter(l => l.trim()).length;
+                window.orderMapping = {}; 
+                const lines = val.split(/\n/).filter(l => l.trim());
+                count = lines.length;
+                lines.forEach(line => {
+                    const parts = line.split(/\t+/);
+                    if (parts.length > 1) {
+                        window.orderMapping[parts[0].trim()] = parts[1].trim();
+                    }
+                });
             }
             document.getElementById('node-count').innerText = count;
         }
@@ -649,11 +665,36 @@
                 const workbook = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
                 const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
                 if (!rows.length) return;
+                
                 const header = rows[0].map(h => String(h).trim().toLowerCase());
-                let poCol = header.findIndex(h => h.includes('po number') || h === 'po#' || h === 'po' || h.includes('order'));
+                let poCol = header.findIndex(h => h === 'po#' || h === 'po' || h.includes('po number'));
                 if (poCol === -1) poCol = 0;
-                const pos = [...new Set(rows.slice(1).map(r => String(r[poCol] || '').trim()).filter(Boolean))];
-                document.getElementById('orders').value = pos.join('\n');
+                
+                let orderCol = header.findIndex(h => h === 'order#' || h === 'order number' || h.includes('order'));
+
+                window.orderMapping = {};
+                const linesToPaste = [];
+                const seenPos = new Set();
+                
+                for (let i = 1; i < rows.length; i++) {
+                    const r = rows[i];
+                    const rawPo = r[poCol];
+                    if (rawPo === undefined || rawPo === null) continue;
+                    
+                    const poVal = String(rawPo).trim();
+                    if (poVal && !seenPos.has(poVal)) {
+                        seenPos.add(poVal);
+                        if (orderCol !== -1 && r[orderCol] !== undefined) {
+                            const orderVal = String(r[orderCol]).trim();
+                            window.orderMapping[poVal] = orderVal;
+                            linesToPaste.push(`${poVal}\t${orderVal}`);
+                        } else {
+                            linesToPaste.push(poVal);
+                        }
+                    }
+                }
+                
+                document.getElementById('orders').value = linesToPaste.join('\n');
                 updateStats();
                 e.target.value = '';
             };
@@ -668,7 +709,7 @@
             });
         }
 
-        // --- Copy & Concat Handlers ---
+        // --- Copy Handlers ---
         async function copyData(txt, el) {
             try { await navigator.clipboard.writeText(txt); } catch (e) {}
             const og = el.className;
@@ -707,7 +748,6 @@
                     if (rawValue) textArray.push(rawValue);
                 }
             });
-            // Dedup and format with comma
             textArray = [...new Set(textArray)];
             if (textArray.length > 0) {
                 try {
@@ -759,17 +799,32 @@
 
             const fShipped = lastResponseData.shipped.filter(filterFn);
             const fNoTrack = lastResponseData.no_tracking.filter(filterFn);
-            
-            // Only hide "Not Found" if user is specifically filtering by Facility or Status
             const fNotFound = (fac === 'ALL' && stat === 'ALL') ? lastResponseData.not_found : [];
 
             renderGroupedTable('bd-shipped', fShipped, 'shipped');
             renderGroupedTable('bd-notracking', fNoTrack, 'notracking');
             
             let t5Checkbox = `<span class="t5-check-wrap"><input type="checkbox" class="t5-chk" onclick="this.closest('tr').classList.toggle('row-highlight', this.checked)"></span>`;
-            document.getElementById('bd-notfound').innerHTML = fNotFound.map(r => `<tr><td data-raw="${r.order}" class="mono" style="color:var(--err); font-weight:bold;">${t5Checkbox}${r.order} <i class="bi bi-copy copy-btn" onclick="copyData('${r.order}', this)"></i></td><td style="color:var(--text-muted)"><span class="badge-st st-err">Did Not Show</span> ${r.reason}</td></tr>`).join('');
+            
+            if (fNotFound.length > 0) {
+                document.getElementById('bd-notfound').innerHTML = fNotFound.map(r => {
+                    let mappedOrder = window.orderMapping && window.orderMapping[r.order] ? window.orderMapping[r.order] : '';
+                    let coHtml = mappedOrder ? `${mappedOrder} <i class="bi bi-copy copy-btn" onclick="copyData('${mappedOrder}', this)"></i>` : `<span style="color:var(--text-muted); font-style:italic">N/A</span>`;
+                    
+                    let combinedId = mappedOrder ? `${r.order}--${mappedOrder}` : `${r.order}--N/A`;
+                    let combinedHtml = mappedOrder ? `${r.order}<span style="color:var(--text-muted)">--${mappedOrder}</span> <i class="bi bi-copy copy-btn" onclick="copyData('${combinedId}', this)"></i>` : `<span style="color:var(--text-muted); font-style:italic">N/A</span>`;
 
-            // Update local tab counters
+                    return `<tr>
+                        <td data-raw="${r.order}" class="mono" style="color:var(--err); font-weight:bold;">${t5Checkbox}${r.order} <i class="bi bi-copy copy-btn" onclick="copyData('${r.order}', this)"></i></td>
+                        <td data-raw="${mappedOrder}" class="mono">${coHtml}</td>
+                        <td data-raw="${mappedOrder ? combinedId : ''}" class="mono">${combinedHtml}</td>
+                        <td style="color:var(--text-muted)"><span class="badge-st st-err">Did Not Show</span> ${r.reason}</td>
+                    </tr>`;
+                }).join('');
+            } else {
+                document.getElementById('bd-notfound').innerHTML = `<tr class="empty-row"><td colspan="4">No records in this category.</td></tr>`;
+            }
+
             document.getElementById('tOk').innerText = fShipped.length;
             document.getElementById('tWarn').innerText = fNoTrack.length;
             document.getElementById('tErr').innerText = fNotFound.length;
@@ -789,7 +844,7 @@
                 
                 if (isSplit) {
                     html += `<tr class="split-parent">
-                        <td colspan="${type === 'shipped' || type === 'notracking' ? 7 : 3}">
+                        <td colspan="${type === 'shipped' || type === 'notracking' ? 8 : 4}">
                             <i class="bi bi-diagram-2"></i> ${order}
                             <i class="bi bi-copy copy-btn" onclick="copyData('${order}', this)"></i>
                             <span style="float:right; font-size:10px; color:var(--text-muted); font-family:var(--font-ui); font-weight:700; text-transform:uppercase;">${items.length} Lines</span>
@@ -803,14 +858,23 @@
                     let displayOrder = isSplit ? '' : `${order} <i class="bi bi-copy copy-btn" onclick="copyData('${order}', this)"></i>`;
                     let t5Checkbox = `<span class="t5-check-wrap"><input type="checkbox" class="t5-chk" onclick="this.closest('tr').classList.toggle('row-highlight', this.checked)"></span>`;
 
-                    // Smart Customer Order Parser (Walmart specific)
                     let displayCustOrder = row.customer_order || 'N/A';
                     let rawCustOrder = row.customer_order || '';
                     if (currentPortal === 'walmart' && displayCustOrder.includes('--')) {
                         displayCustOrder = displayCustOrder.split('--').pop();
                         rawCustOrder = displayCustOrder;
                     }
+                    
+                    // Fallback to order mapping if empty
+                    if ((!rawCustOrder || rawCustOrder === 'N/A') && window.orderMapping && window.orderMapping[order]) {
+                        rawCustOrder = window.orderMapping[order];
+                        displayCustOrder = rawCustOrder;
+                    }
+
                     let coHtml = displayCustOrder !== 'N/A' ? `${displayCustOrder} <i class="bi bi-copy copy-btn" onclick="copyData('${displayCustOrder}', this)"></i>` : `<span style="color:var(--text-muted); font-style:italic">N/A</span>`;
+
+                    let combinedId = rawCustOrder && rawCustOrder !== 'N/A' ? `${order}--${rawCustOrder}` : `${order}--N/A`;
+                    let combinedHtml = rawCustOrder && rawCustOrder !== 'N/A' ? `${order}<span style="color:var(--text-muted)">--${rawCustOrder}</span> <i class="bi bi-copy copy-btn" onclick="copyData('${combinedId}', this)"></i>` : `<span style="color:var(--text-muted); font-style:italic">N/A</span>`;
 
                     if (type === 'shipped') {
                         let trk = row.tracking ? `${row.tracking} <i class="bi bi-copy copy-btn" onclick="copyData('${row.tracking}', this)"></i>` : `<span style="color:var(--text-muted); font-style:italic">N/A</span>`;
@@ -818,6 +882,7 @@
                             <td data-raw="${isSplit ? '' : order}" class="mono">${t5Checkbox}${displayOrder}</td>
                             <td data-raw="${row.so_number}" class="mono" style="color:var(--text-main); font-weight:700;"><span style="color:var(--text-muted); font-weight:400;">${branch}</span>${row.so_number} <i class="bi bi-copy copy-btn" onclick="copyData('${row.so_number}', this)"></i></td>
                             <td data-raw="${rawCustOrder}" class="mono">${coHtml}</td>
+                            <td data-raw="${rawCustOrder && rawCustOrder !== 'N/A' ? combinedId : ''}" class="mono">${combinedHtml}</td>
                             <td class="mono">${row.ship_from || 'N/A'}</td>
                             <td class="mono" style="color:var(--text-muted)">${row.created_date || 'N/A'}</td>
                             <td data-raw="${row.tracking || ''}" class="mono">${trk}</td>
@@ -829,6 +894,7 @@
                             <td data-raw="${isSplit ? '' : order}" class="mono">${t5Checkbox}${displayOrder}</td>
                             <td data-raw="${row.so_number}" class="mono" style="color:var(--text-main); font-weight:700;"><span style="color:var(--text-muted); font-weight:400;">${branch}</span>${row.so_number} <i class="bi bi-copy copy-btn" onclick="copyData('${row.so_number}', this)"></i></td>
                             <td data-raw="${rawCustOrder}" class="mono">${coHtml}</td>
+                            <td data-raw="${rawCustOrder && rawCustOrder !== 'N/A' ? combinedId : ''}" class="mono">${combinedHtml}</td>
                             <td class="mono">${row.ship_from || 'N/A'}</td>
                             <td class="mono" style="color:var(--text-muted)">${row.created_date || 'N/A'}</td>
                             <td class="mono">${reasonLog}</td>
@@ -837,7 +903,7 @@
                     }
                 });
             }
-            if (!html) html = `<tr class="empty-row"><td colspan="${type === 'shipped' || type === 'notracking' ? 7 : 3}">No records in this category.</td></tr>`;
+            if (!html) html = `<tr class="empty-row"><td colspan="${type === 'shipped' || type === 'notracking' ? 8 : 4}">No records in this category.</td></tr>`;
             document.getElementById(tbodyId).innerHTML = html;
         }
 
@@ -845,9 +911,19 @@
             const raw = document.getElementById('orders').value;
             if (!raw.trim()) return;
 
-            let finalOrders = currentPortal === 'partsgeek'
-                ? [...new Set(raw.match(/PG1\d+/g) || [])]
-                : raw.split(/\n/).map(s => s.trim()).filter(Boolean);
+            let finalOrders = [];
+            if (currentPortal === 'partsgeek') {
+                finalOrders = [...new Set(raw.match(/PG1\d+/g) || [])];
+            } else {
+                const lines = raw.split(/\n/).map(s => s.trim()).filter(Boolean);
+                lines.forEach(line => {
+                    const parts = line.split(/\t+/);
+                    const po = parts[0].trim();
+                    if (po && !finalOrders.includes(po)) {
+                        finalOrders.push(po);
+                    }
+                });
+            }
 
             if (!finalOrders.length) { alert("No valid identifiers found."); return; }
 
@@ -864,15 +940,35 @@
                 if (currentPortal === 'partsgeek') txt.innerText = `SCANNING DATA STREAM... [${p}%]`;
             }, 200);
 
-            let data;
             try {
                 const res = await fetch('/api/extract', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ orders: finalOrders.join('\n') })
                 });
                 if (res.status === 401) { window.location.href = '/'; return; }
-                data = await res.json();
+                const data = await res.json();
+                
+                clearInterval(sim); fill.style.width = '100%';
+                if (currentPortal === 'partsgeek') txt.innerText = `SCAN COMPLETE [100%]`;
+                
                 if (data.error) throw new Error(data.error);
+
+                lastResponseData = data;
+                populateFilters(data);
+                applyFilters();
+
+                document.getElementById('st-tot').innerText = data.shipped.length + data.no_tracking.length + data.not_found.length;
+                document.getElementById('st-ok').innerText = data.shipped.length; 
+                document.getElementById('st-warn').innerText = data.no_tracking.length; 
+                document.getElementById('st-err').innerText = data.not_found.length; 
+
+                setTimeout(() => {
+                    document.getElementById('loader-wrap').style.display = 'none';
+                    document.getElementById('controls').style.display = 'flex';
+                    document.getElementById('results').style.display = 'block';
+                    fill.style.width = '0%';
+                }, 500);
+
             } catch (err) {
                 clearInterval(sim); fill.style.background = '#EF4444'; fill.style.width = '100%';
                 txt.innerText = "SYSTEM EXCEPTION OCCURRED";
@@ -882,32 +978,7 @@
                     fill.style.background = 'var(--accent)'; fill.style.width = '0%';
                     alert("Exception: " + err.message);
                 }, 2000);
-                return;
             }
-
-            clearInterval(sim); fill.style.width = '100%';
-            if (currentPortal === 'partsgeek') txt.innerText = `SCAN COMPLETE [100%]`;
-
-            // Save data to global scope for filters
-            lastResponseData = data;
-            
-            // Populate Filters
-            populateFilters(data);
-            
-            // Render via Filter Engine
-            applyFilters();
-
-            document.getElementById('st-tot').innerText = data.shipped.length + data.no_tracking.length + data.not_found.length;
-            document.getElementById('st-ok').innerText = data.shipped.length; 
-            document.getElementById('st-warn').innerText = data.no_tracking.length; 
-            document.getElementById('st-err').innerText = data.not_found.length; 
-
-            setTimeout(() => {
-                document.getElementById('loader-wrap').style.display = 'none';
-                document.getElementById('controls').style.display = 'flex';
-                document.getElementById('results').style.display = 'block';
-                fill.style.width = '0%';
-            }, 500);
         }
     </script>
 </body>
