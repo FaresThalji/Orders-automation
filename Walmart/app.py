@@ -25,7 +25,6 @@ async def authenticate_deposco(http_session, company, username, password):
         return None, f"Connection Error: {str(e)}"
 
 def get_view_payload(po_number):
-    # This is the EXACT payload Deposco expects, with the filter injected into customerOrderNumber
     return {
         "view": {
             "id": 10644, "entityId": 5053, "companyId": 73, "userId": 2509, "groupId": 0,
@@ -35,10 +34,7 @@ def get_view_payload(po_number):
                 {"title": "Number", "name": "number", "fieldName": "number", "sortOrder": 0, "dataType": "Text", "returnDataType": "Text", "filtering": {}, "length": 25, "displayOrder": 0, "entityId": 5053, "entity": "com.deposco.domain.OrderHeader", "entityType": "Business", "entityName": "OrderHeader", "attributeId": 104649, "subAttributeId": 0, "relatedToId": 0, "required": True, "readOnly": False, "custom": False, "searchable": True, "sortable": True, "businessKey": True, "isEntityTag": False, "allowNegative": False},
                 {"title": "Updated Date", "name": "updatedDate", "fieldName": "updatedDate", "sortOrder": 0, "dataType": "DateTime", "returnDataType": "Text", "filtering": {}, "length": 25, "displayOrder": 1, "entityId": 5053, "entity": "com.deposco.domain.OrderHeader", "entityType": "Business", "entityName": "OrderHeader", "attributeId": 104491, "subAttributeId": 0, "relatedToId": 0, "required": False, "readOnly": True, "custom": False, "searchable": False, "sortable": True, "businessKey": False, "isEntityTag": False, "allowNegative": False},
                 {"title": "Created Date", "name": "createdDate", "fieldName": "createdDate", "sortOrder": 0, "dataType": "DateTime", "returnDataType": "Text", "filtering": {}, "length": 25, "displayOrder": 2, "entityId": 5053, "entity": "com.deposco.domain.OrderHeader", "entityType": "Business", "entityName": "OrderHeader", "attributeId": 104561, "subAttributeId": 0, "relatedToId": 0, "required": False, "readOnly": True, "custom": False, "searchable": False, "sortable": True, "businessKey": False, "isEntityTag": False, "allowNegative": False},
-                
-                # INJECTED FILTER HERE: Search by PO Number (operator 5 = Starts With)
                 {"title": "Customer Order Number", "name": "customerOrderNumber", "fieldName": "customerOrderNumber", "sortOrder": 0, "dataType": "Text", "returnDataType": "Text", "filtering": {"filterString": po_number, "operator": 5, "filterStrings": []}, "length": 50, "displayOrder": 3, "entityId": 5053, "entity": "com.deposco.domain.OrderHeader", "entityType": "Business", "entityName": "OrderHeader", "attributeId": 114035, "subAttributeId": 0, "relatedToId": 0, "required": False, "readOnly": False, "custom": False, "searchable": True, "sortable": False, "businessKey": False, "isEntityTag": False, "allowNegative": False},
-                
                 {"title": "Current Status", "name": "currentStatus", "fieldName": "currentStatus", "sortOrder": 0, "dataType": "Enumeration", "returnDataType": "Text", "filtering": {}, "length": 25, "displayOrder": 5, "entityId": 5053, "entity": "com.deposco.domain.OrderHeader", "entityType": "Business", "entityName": "OrderHeader", "attributeId": 104555, "subAttributeId": 0, "relatedToId": 0, "required": True, "readOnly": False, "custom": False, "searchable": False, "sortable": True, "businessKey": False, "isEntityTag": False, "allowNegative": False},
                 {"title": "Ship From Facility - Number", "name": "shipFrom.number", "fieldName": "shipFrom", "sortOrder": 0, "dataType": "RelatedEntity", "returnDataType": "Text", "filtering": {}, "relatedToEntity": "com.deposco.domain.Facility", "relatedToEntityName": "Facility", "relatedToEntityType": "Business", "relatedToFieldName": "number", "relatedToDataType": "Text", "length": 0, "displayOrder": 15, "entityId": 5053, "entity": "com.deposco.domain.OrderHeader", "entityType": "Business", "entityName": "OrderHeader", "attributeId": 113601, "subAttributeId": 102369, "relatedToId": 4955, "required": True, "readOnly": False, "custom": False, "searchable": False, "sortable": True, "businessKey": True, "isEntityTag": False, "allowNegative": False},
                 {"title": "Tracking Link(s)", "name": "baseTrackingLink", "fieldName": "baseTrackingLink", "sortOrder": 0, "dataType": "API", "returnDataType": "Text", "apiSql": "SELECT group_concat(concat( CASE WHEN c_.TRACKING_NUMBER IS NOT NULL THEN COALESCE(concat(ss_.SHIP_VENDOR, '=', ss_.FREIGHT_TYPE, '=', c_.TRACKING_NUMBER, ','),'') ELSE '' END , '', COALESCE(concat(ss_.SHIP_VENDOR, '=', ss_.FREIGHT_TYPE, '=', ch_.TRACKING_NUMBER), '') )) from SHIPMENT_ORDER_HEADER soh_ inner join SHIPMENT s_ on soh_.SHIPMENT_ID = s_.SHIPMENT_ID INNER JOIN SHIPPING_SERVICE ss_ ON ss_.ship_via = s_.SHIP_VIA LEFT JOIN CONTAINER c_ ON c_.shipment_id = s_.shipment_id LEFT JOIN CONTAINER_HIST ch_ ON ch_.shipment_id = s_.shipment_id WHERE soh_.ORDER_HEADER_ID = :id", "filtering": {}, "length": 400, "displayOrder": 11, "entityId": 5053, "entity": "com.deposco.domain.OrderHeader", "entityType": "Business", "entityName": "OrderHeader", "attributeId": 113843, "subAttributeId": 0, "relatedToId": 0, "required": False, "readOnly": True, "custom": False, "searchable": False, "sortable": False, "businessKey": False, "isEntityTag": False, "allowNegative": False},
@@ -70,6 +66,7 @@ async def fetch_order(http_session, po_number, token, semaphore):
                 out_results = []
                 for rec in records:
                     so_num = rec.get("number", "N/A")
+                    cust_order = rec.get("customerOrderNumber") or "N/A"
                     created_date = rec.get("createdDate", "N/A")
                     ship_from = rec.get("shipFrom.number", "N/A")
                     status = rec.get("currentStatus", "Unknown")
@@ -86,9 +83,27 @@ async def fetch_order(http_session, po_number, token, semaphore):
                     if not final_trk and fallback_track: final_trk = fallback_track.strip()
                         
                     if final_trk:
-                        out_results.append({"order": po_number, "so_number": so_num, "ship_from": ship_from, "created_date": created_date, "category": "SHIPPED", "status": status, "tracking": final_trk})
+                        out_results.append({
+                            "order": po_number, 
+                            "so_number": so_num, 
+                            "customer_order": cust_order, 
+                            "ship_from": ship_from, 
+                            "created_date": created_date, 
+                            "category": "SHIPPED", 
+                            "status": status, 
+                            "tracking": final_trk
+                        })
                     else:
-                        out_results.append({"order": po_number, "so_number": so_num, "ship_from": ship_from, "created_date": created_date, "category": "NO_TRACKING", "status": status, "reason": "No tracking info found"})
+                        out_results.append({
+                            "order": po_number, 
+                            "so_number": so_num, 
+                            "customer_order": cust_order, 
+                            "ship_from": ship_from, 
+                            "created_date": created_date, 
+                            "category": "NO_TRACKING", 
+                            "status": status, 
+                            "reason": "No tracking info found"
+                        })
                         
                 return out_results
 
