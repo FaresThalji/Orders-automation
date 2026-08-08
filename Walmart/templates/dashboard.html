@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,7 @@
             --ease-fluid: cubic-bezier(0.16, 1, 0.3, 1);
             --ease-mechanical: cubic-bezier(0.85, 0, 0.15, 1);
             --env-transition: opacity 1.2s var(--ease-fluid), transform 1.6s var(--ease-fluid);
-            /* Shared semantic status colors (kept legible in both themes) */
+            /* Shared semantic status colors */
             --ok: #10B981; --ok-soft: rgba(16,185,129,0.14); --ok-line: rgba(16,185,129,0.35);
             --warn: #F59E0B; --warn-soft: rgba(245,158,11,0.14); --warn-line: rgba(245,158,11,0.35);
             --err: #EF4444; --err-soft: rgba(239,68,68,0.14); --err-line: rgba(239,68,68,0.35);
@@ -116,7 +116,7 @@
         ::selection { background: var(--accent); color: #fff; }
 
         /* =========================================
-           BACKGROUND ENVIRONMENTS (calmer, low-noise)
+           BACKGROUND ENVIRONMENTS
            ========================================= */
         #origin-environments { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
         .env-layer { position: absolute; inset: 0; opacity: 0; transition: var(--env-transition); transform: scale(1.04); will-change: opacity, transform; }
@@ -259,12 +259,23 @@
         .s-val { font-size: 34px; font-weight: 800; color: var(--stat-color, var(--text-main)); line-height: 1; font-family: var(--font-ui); }
         body[data-portal="turn5"] .s-val, body[data-portal="partsgeek"] .s-val { font-family: 'JetBrains Mono', monospace; }
 
-        /* Data Tables */
-        .data-nav { display: flex; gap: 28px; border-bottom: 2px solid var(--border); margin-bottom: 4px; padding: 0 clamp(14px, 3vw, 24px); font-family: 'Inter', sans-serif; overflow-x: auto; }
+        /* Dynamic Table Filters */
+        .data-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--border); margin-bottom: 24px; padding: 0 10px; flex-wrap: wrap; gap: 14px;}
+        .data-nav { display: flex; gap: 28px; font-family: 'Inter', sans-serif; overflow-x: auto; }
         .d-tab { font-size: 13px; font-weight: 700; color: var(--text-muted); padding: 18px 2px 15px; cursor: pointer; transition: 0.3s; position: relative; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
         .d-tab:hover { color: var(--text-main); }
         .d-tab.active { color: var(--accent); }
         .d-tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background: var(--accent); border-radius: 2px; box-shadow: 0 -2px 10px var(--accent-glow); }
+
+        .table-filters { display: flex; gap: 12px; margin-bottom: 12px; }
+        .filter-dropdown {
+            background: var(--surface-2); color: var(--text-main); border: 1px solid var(--border);
+            padding: 8px 16px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 700;
+            font-family: var(--font-ui); outline: none; cursor: pointer; transition: all 0.3s;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .filter-dropdown:focus, .filter-dropdown:hover { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+        body[data-theme="dark"] .filter-dropdown option { background: var(--surface-1); }
 
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
@@ -278,6 +289,23 @@
         .split-parent td { background: var(--accent-glow); font-weight: 800; color: var(--accent); border-bottom: none; border-top: 1px solid var(--border); }
         .split-child td { border-left: 3px solid var(--accent); background: var(--input-bg); }
 
+        /* --- TURN5 SPECIFIC CHECKBOX HIGHLIGHTING --- */
+        .t5-check-wrap { display: none; margin-right: 12px; vertical-align: middle; }
+        body[data-portal="turn5"] .t5-check-wrap { display: inline-block; }
+        .t5-chk {
+            appearance: none; width: 16px; height: 16px; border: 2px solid var(--text-muted);
+            border-radius: 2px; background: transparent; cursor: pointer; transition: 0.2s;
+            position: relative; margin: 0; outline: none;
+        }
+        .t5-chk:hover { border-color: var(--accent); }
+        .t5-chk:checked { background: var(--accent); border-color: var(--accent); }
+        .t5-chk:checked::after {
+            content: ''; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px;
+            border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg);
+        }
+        body[data-portal="turn5"] tr.row-highlight td { background: var(--accent-glow) !important; }
+        body[data-portal="turn5"] tr.row-highlight td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
+
         /* Status Badges */
         .badge-st { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: var(--radius-sm); font-size: 10px; font-weight: 800; letter-spacing: 0.4px; font-family: 'Inter', sans-serif; text-transform: uppercase; }
         .badge-st::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
@@ -285,14 +313,19 @@
         .st-warn { background: var(--warn-soft); color: var(--warn); border: 1px solid var(--warn-line); }
         .st-err { background: var(--err-soft); color: var(--err); border: 1px solid var(--err-line); }
 
+        /* Copy & Concat Buttons */
         .copy-btn { opacity: 0; color: var(--text-muted); cursor: pointer; transition: 0.2s; margin-left: 8px; font-size: 13px; }
         tr:hover .copy-btn, .split-parent:hover .copy-btn { opacity: 0.8; }
         .copy-btn:hover { color: var(--accent); transform: scale(1.2); opacity: 1; }
+        
         .btn-copy-col { background: transparent; border: 1px solid var(--border); color: var(--text-muted); font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: var(--radius-sm); margin-left: 10px; cursor: pointer; transition: 0.3s; }
         .btn-copy-col:hover { background: var(--surface-2); color: var(--accent); border-color: var(--accent); }
         .btn-copy-col.copied { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-        /* Transition Engine */
+        .concat-btn { display: none; margin-left: 5px; }
+        body[data-portal="walmart"] .concat-btn { display: inline-block; }
+
+        /* Transition Engine Overlays */
         #portal-transit { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; }
         .t-walmart { position: absolute; top: 0; bottom: 0; right: 0; width: 0vw; background: #0071CE; transition: width 0.6s var(--ease-fluid); }
         .t-walmart::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #FFC220; box-shadow: 0 0 20px #FFC220; }
@@ -426,30 +459,76 @@
             </div>
 
             <div class="card" style="padding: 0; overflow: hidden;">
-                <div class="data-nav">
-                    <div class="d-tab active" onclick="setTab('shipped', this)">Shipped (<span id="tOk">0</span>)</div>
-                    <div class="d-tab" onclick="setTab('notracking', this)">No Tracking (<span id="tWarn">0</span>)</div>
-                    <div class="d-tab" onclick="setTab('notfound', this)">Did Not Show (<span id="tErr">0</span>)</div>
+                <div class="data-header">
+                    <div class="data-nav">
+                        <div class="d-tab active" onclick="setTab('shipped', this)">Shipped (<span id="tOk">0</span>)</div>
+                        <div class="d-tab" onclick="setTab('notracking', this)">No Tracking (<span id="tWarn">0</span>)</div>
+                        <div class="d-tab" onclick="setTab('notfound', this)">Did Not Show (<span id="tErr">0</span>)</div>
+                    </div>
+                    <!-- Live Table Filters -->
+                    <div class="table-filters">
+                        <select id="filter-facility" class="filter-dropdown" onchange="applyFilters()">
+                            <option value="ALL">ALL FACILITIES</option>
+                        </select>
+                        <select id="filter-status" class="filter-dropdown" onchange="applyFilters()">
+                            <option value="ALL">ALL STATUSES</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="table-wrap">
                     <table id="tbl-shipped">
                         <thead><tr>
-                            <th>Order number <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 0, this)"><i class="bi bi-files"></i></button></th>
-                            <th>Deposco SO <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 1, this)"><i class="bi bi-files"></i></button></th>
+                            <th>Origin PO 
+                                <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 0, this)"><i class="bi bi-files"></i></button>
+                                <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-shipped', 0, this)">Concat</button>
+                            </th>
+                            <th>Deposco SO 
+                                <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 1, this)"><i class="bi bi-files"></i></button>
+                                <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-shipped', 1, this)">Concat</button>
+                            </th>
+                            <th>Cust Order # 
+                                <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 2, this)"><i class="bi bi-files"></i></button>
+                                <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-shipped', 2, this)">Concat</button>
+                            </th>
                             <th>Facility</th>
                             <th>Created date</th>
-                            <th>Tracking number <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 4, this)"><i class="bi bi-files"></i></button></th>
+                            <th>Tracking number 
+                                <button class="btn-copy-col" onclick="copyColumn('bd-shipped', 5, this)"><i class="bi bi-files"></i></button>
+                            </th>
                             <th>Status</th>
                         </tr></thead>
                         <tbody id="bd-shipped"></tbody>
                     </table>
                     <table id="tbl-notracking" style="display:none;">
-                        <thead><tr><th>Order number</th><th>Deposco SO</th><th>System Log</th></tr></thead>
+                        <thead><tr>
+                            <th>Origin PO 
+                                <button class="btn-copy-col" onclick="copyColumn('bd-notracking', 0, this)"><i class="bi bi-files"></i></button>
+                                <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notracking', 0, this)">Concat</button>
+                            </th>
+                            <th>Deposco SO 
+                                <button class="btn-copy-col" onclick="copyColumn('bd-notracking', 1, this)"><i class="bi bi-files"></i></button>
+                                <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notracking', 1, this)">Concat</button>
+                            </th>
+                            <th>Cust Order # 
+                                <button class="btn-copy-col" onclick="copyColumn('bd-notracking', 2, this)"><i class="bi bi-files"></i></button>
+                                <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notracking', 2, this)">Concat</button>
+                            </th>
+                            <th>Facility</th>
+                            <th>Created date</th>
+                            <th>System Log</th>
+                            <th>Status</th>
+                        </tr></thead>
                         <tbody id="bd-notracking"></tbody>
                     </table>
                     <table id="tbl-notfound" style="display:none;">
-                        <thead><tr><th>Order number</th><th>System Log</th></tr></thead>
+                        <thead><tr>
+                            <th>Origin PO 
+                                <button class="btn-copy-col" onclick="copyColumn('bd-notfound', 0, this)"><i class="bi bi-files"></i></button>
+                                <button class="btn-copy-col concat-btn" onclick="copyColumnConcat('bd-notfound', 0, this)">Concat</button>
+                            </th>
+                            <th>System Log</th>
+                        </tr></thead>
                         <tbody id="bd-notfound"></tbody>
                     </table>
                 </div>
@@ -464,9 +543,9 @@
             document.querySelectorAll('.stagger-1, .stagger-2, .stagger-3').forEach(el => el.classList.add('stagger-in'));
         }, 50);
 
-        // --- Theme Engine ---
+        // --- Theme Engine (Defaults to Light) ---
         function toggleTheme() {
-            const current = document.body.getAttribute('data-theme') || 'light';
+            const current = document.documentElement.getAttribute('data-theme') || 'light';
             const target = current === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', target);
             document.body.setAttribute('data-theme', target);
@@ -474,14 +553,16 @@
             const icon = document.getElementById('theme-icon');
             icon.style.transform = 'rotate(180deg) scale(0)';
             setTimeout(() => {
-                icon.className = target === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+                icon.className = target === 'dark' ? 'bi bi-moon-stars-fill' : 'bi bi-sun-fill';
                 icon.style.transform = 'rotate(0deg) scale(1)';
             }, 150);
         }
+        
+        // Strict default to Light Mode if nothing saved
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         document.body.setAttribute('data-theme', savedTheme);
-        document.getElementById('theme-icon').className = savedTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+        document.getElementById('theme-icon').className = savedTheme === 'dark' ? 'bi bi-moon-stars-fill' : 'bi bi-sun-fill';
 
         // --- Portal Transition Engine ---
         let currentPortal = 'walmart';
@@ -587,6 +668,7 @@
             });
         }
 
+        // --- Copy & Concat Handlers ---
         async function copyData(txt, el) {
             try { await navigator.clipboard.writeText(txt); } catch (e) {}
             const og = el.className;
@@ -595,7 +677,7 @@
         }
 
         async function copyColumn(tbodyId, colIndex, btnElement) {
-            const rows = document.querySelectorAll(`#${tbodyId} tr`);
+            const rows = document.querySelectorAll(`#${tbodyId} tr:not(.split-parent)`);
             let textArray = [];
             rows.forEach(row => {
                 const cell = row.cells[colIndex];
@@ -615,6 +697,84 @@
             }
         }
 
+        async function copyColumnConcat(tbodyId, colIndex, btnElement) {
+            const rows = document.querySelectorAll(`#${tbodyId} tr:not(.split-parent)`);
+            let textArray = [];
+            rows.forEach(row => {
+                const cell = row.cells[colIndex];
+                if (cell && cell.hasAttribute('data-raw')) {
+                    const rawValue = cell.getAttribute('data-raw');
+                    if (rawValue) textArray.push(rawValue);
+                }
+            });
+            // Dedup and format with comma
+            textArray = [...new Set(textArray)];
+            if (textArray.length > 0) {
+                try {
+                    await navigator.clipboard.writeText(textArray.join(','));
+                    const ogHtml = btnElement.innerHTML;
+                    btnElement.innerHTML = '<i class="bi bi-check-all"></i> Concat';
+                    btnElement.classList.add('copied');
+                    setTimeout(() => { btnElement.innerHTML = ogHtml; btnElement.classList.remove('copied'); }, 1500);
+                } catch (e) {}
+            }
+        }
+
+        // --- FILTER ENGINE ---
+        let lastResponseData = { shipped: [], no_tracking: [], not_found: [] };
+
+        function populateFilters(data) {
+            const facilities = new Set();
+            const statuses = new Set();
+
+            [...data.shipped, ...data.no_tracking].forEach(item => {
+                if(item.ship_from) facilities.add(item.ship_from);
+                if(item.status) statuses.add(item.status);
+            });
+
+            const facSelect = document.getElementById('filter-facility');
+            const statSelect = document.getElementById('filter-status');
+
+            facSelect.innerHTML = '<option value="ALL">ALL FACILITIES</option>';
+            statSelect.innerHTML = '<option value="ALL">ALL STATUSES</option>';
+
+            Array.from(facilities).sort().forEach(f => {
+                facSelect.innerHTML += `<option value="${f}">${f}</option>`;
+            });
+            Array.from(statuses).sort().forEach(s => {
+                statSelect.innerHTML += `<option value="${s}">${s}</option>`;
+            });
+        }
+
+        function applyFilters() {
+            if (!lastResponseData.shipped) return;
+            const fac = document.getElementById('filter-facility').value;
+            const stat = document.getElementById('filter-status').value;
+
+            const filterFn = (item) => {
+                const matchFac = (fac === 'ALL' || item.ship_from === fac);
+                const matchStat = (stat === 'ALL' || item.status === stat);
+                return matchFac && matchStat;
+            };
+
+            const fShipped = lastResponseData.shipped.filter(filterFn);
+            const fNoTrack = lastResponseData.no_tracking.filter(filterFn);
+            
+            // Only hide "Not Found" if user is specifically filtering by Facility or Status
+            const fNotFound = (fac === 'ALL' && stat === 'ALL') ? lastResponseData.not_found : [];
+
+            renderGroupedTable('bd-shipped', fShipped, 'shipped');
+            renderGroupedTable('bd-notracking', fNoTrack, 'notracking');
+            
+            let t5Checkbox = `<span class="t5-check-wrap"><input type="checkbox" class="t5-chk" onclick="this.closest('tr').classList.toggle('row-highlight', this.checked)"></span>`;
+            document.getElementById('bd-notfound').innerHTML = fNotFound.map(r => `<tr><td data-raw="${r.order}" class="mono" style="color:var(--err); font-weight:bold;">${t5Checkbox}${r.order} <i class="bi bi-copy copy-btn" onclick="copyData('${r.order}', this)"></i></td><td style="color:var(--text-muted)"><span class="badge-st st-err">Did Not Show</span> ${r.reason}</td></tr>`).join('');
+
+            // Update local tab counters
+            document.getElementById('tOk').innerText = fShipped.length;
+            document.getElementById('tWarn').innerText = fNoTrack.length;
+            document.getElementById('tErr').innerText = fNotFound.length;
+        }
+
         // --- SPLIT ORDER GROUPING RENDERER ---
         function renderGroupedTable(tbodyId, dataArray, type) {
             const grouped = {};
@@ -626,57 +786,59 @@
             let html = '';
             for (const [order, items] of Object.entries(grouped)) {
                 const isSplit = items.length > 1;
+                
                 if (isSplit) {
                     html += `<tr class="split-parent">
-                        <td colspan="${type === 'shipped' ? 6 : 3}">
+                        <td colspan="${type === 'shipped' || type === 'notracking' ? 7 : 3}">
                             <i class="bi bi-diagram-2"></i> ${order}
                             <i class="bi bi-copy copy-btn" onclick="copyData('${order}', this)"></i>
                             <span style="float:right; font-size:10px; color:var(--text-muted); font-family:var(--font-ui); font-weight:700; text-transform:uppercase;">${items.length} Lines</span>
                         </td>
                     </tr>`;
                 }
+                
                 items.forEach((row, i) => {
                     let branch = isSplit ? (i === items.length - 1 ? '&#9492;&#9472; ' : '&#9500;&#9472; ') : '';
                     let rowClass = isSplit ? 'split-child' : '';
                     let displayOrder = isSplit ? '' : `${order} <i class="bi bi-copy copy-btn" onclick="copyData('${order}', this)"></i>`;
+                    let t5Checkbox = `<span class="t5-check-wrap"><input type="checkbox" class="t5-chk" onclick="this.closest('tr').classList.toggle('row-highlight', this.checked)"></span>`;
+
+                    // Smart Customer Order Parser (Walmart specific)
+                    let displayCustOrder = row.customer_order || 'N/A';
+                    let rawCustOrder = row.customer_order || '';
+                    if (currentPortal === 'walmart' && displayCustOrder.includes('--')) {
+                        displayCustOrder = displayCustOrder.split('--').pop();
+                        rawCustOrder = displayCustOrder;
+                    }
+                    let coHtml = displayCustOrder !== 'N/A' ? `${displayCustOrder} <i class="bi bi-copy copy-btn" onclick="copyData('${displayCustOrder}', this)"></i>` : `<span style="color:var(--text-muted); font-style:italic">N/A</span>`;
 
                     if (type === 'shipped') {
                         let trk = row.tracking ? `${row.tracking} <i class="bi bi-copy copy-btn" onclick="copyData('${row.tracking}', this)"></i>` : `<span style="color:var(--text-muted); font-style:italic">N/A</span>`;
                         html += `<tr class="${rowClass}">
-                            <td data-raw="${isSplit ? '' : order}" class="mono">${displayOrder}</td>
+                            <td data-raw="${isSplit ? '' : order}" class="mono">${t5Checkbox}${displayOrder}</td>
                             <td data-raw="${row.so_number}" class="mono" style="color:var(--text-main); font-weight:700;"><span style="color:var(--text-muted); font-weight:400;">${branch}</span>${row.so_number} <i class="bi bi-copy copy-btn" onclick="copyData('${row.so_number}', this)"></i></td>
-                            <td class="mono">${row.ship_from}</td>
-                            <td class="mono" style="color:var(--text-muted)">${row.created_date}</td>
+                            <td data-raw="${rawCustOrder}" class="mono">${coHtml}</td>
+                            <td class="mono">${row.ship_from || 'N/A'}</td>
+                            <td class="mono" style="color:var(--text-muted)">${row.created_date || 'N/A'}</td>
                             <td data-raw="${row.tracking || ''}" class="mono">${trk}</td>
-                            <td><span class="badge-st st-ok">${row.status}</span></td>
+                            <td><span class="badge-st st-ok">${row.status || 'SHIPPED'}</span></td>
                         </tr>`;
                     } else if (type === 'notracking') {
+                        let reasonLog = row.reason ? `<span style="color:var(--text-muted); font-style:italic">${row.reason}</span>` : `<span style="color:var(--text-muted); font-style:italic">N/A</span>`;
                         html += `<tr class="${rowClass}">
-                            <td data-raw="${isSplit ? '' : order}" class="mono">${displayOrder}</td>
-                            <td data-raw="${row.so_number}" class="mono" style="color:var(--text-main); font-weight:700;"><span style="color:var(--text-muted); font-weight:400;">${branch}</span>${row.so_number}</td>
-                            <td style="color:var(--text-muted)"><span class="badge-st st-warn">No Tracking</span> ${row.reason}</td>
+                            <td data-raw="${isSplit ? '' : order}" class="mono">${t5Checkbox}${displayOrder}</td>
+                            <td data-raw="${row.so_number}" class="mono" style="color:var(--text-main); font-weight:700;"><span style="color:var(--text-muted); font-weight:400;">${branch}</span>${row.so_number} <i class="bi bi-copy copy-btn" onclick="copyData('${row.so_number}', this)"></i></td>
+                            <td data-raw="${rawCustOrder}" class="mono">${coHtml}</td>
+                            <td class="mono">${row.ship_from || 'N/A'}</td>
+                            <td class="mono" style="color:var(--text-muted)">${row.created_date || 'N/A'}</td>
+                            <td class="mono">${reasonLog}</td>
+                            <td><span class="badge-st st-warn">${row.status || 'N/A'}</span></td>
                         </tr>`;
                     }
                 });
             }
-            if (!html) html = `<tr class="empty-row"><td colspan="${type === 'shipped' ? 6 : 3}">No records in this category.</td></tr>`;
+            if (!html) html = `<tr class="empty-row"><td colspan="${type === 'shipped' || type === 'notracking' ? 7 : 3}">No records in this category.</td></tr>`;
             document.getElementById(tbodyId).innerHTML = html;
-        }
-
-        // --- Demo fallback (used only when /api/extract is unavailable) ---
-        function demoData(orders) {
-            const shipped = [], no_tracking = [], not_found = [];
-            orders.forEach((o, idx) => {
-                const bucket = idx % 3;
-                if (bucket === 0) {
-                    shipped.push({ order: o, so_number: 'SO' + (100000 + idx), ship_from: 'DFW-01', created_date: '2026-08-0' + ((idx % 7) + 1), tracking: '1Z' + (999000 + idx), status: 'Shipped' });
-                } else if (bucket === 1) {
-                    no_tracking.push({ order: o, so_number: 'SO' + (200000 + idx), reason: 'Awaiting carrier scan.' });
-                } else {
-                    not_found.push({ order: o, reason: 'No matching record found.' });
-                }
-            });
-            return { shipped, no_tracking, not_found };
         }
 
         async function execute() {
@@ -712,23 +874,33 @@
                 data = await res.json();
                 if (data.error) throw new Error(data.error);
             } catch (err) {
-                // Standalone/preview fallback so the interface stays fully viewable.
-                data = demoData(finalOrders);
+                clearInterval(sim); fill.style.background = '#EF4444'; fill.style.width = '100%';
+                txt.innerText = "SYSTEM EXCEPTION OCCURRED";
+                setTimeout(() => {
+                    document.getElementById('loader-wrap').style.display = 'none';
+                    document.getElementById('controls').style.display = 'flex';
+                    fill.style.background = 'var(--accent)'; fill.style.width = '0%';
+                    alert("Exception: " + err.message);
+                }, 2000);
+                return;
             }
 
             clearInterval(sim); fill.style.width = '100%';
             if (currentPortal === 'partsgeek') txt.innerText = `SCAN COMPLETE [100%]`;
 
-            renderGroupedTable('bd-shipped', data.shipped, 'shipped');
-            renderGroupedTable('bd-notracking', data.no_tracking, 'notracking');
-            document.getElementById('bd-notfound').innerHTML = data.not_found.length
-                ? data.not_found.map(r => `<tr><td data-raw="${r.order}" class="mono" style="color:var(--err); font-weight:bold;">${r.order} <i class="bi bi-copy copy-btn" onclick="copyData('${r.order}', this)"></i></td><td style="color:var(--text-muted)"><span class="badge-st st-err">Did Not Show</span> ${r.reason}</td></tr>`).join('')
-                : `<tr class="empty-row"><td colspan="2">No records in this category.</td></tr>`;
+            // Save data to global scope for filters
+            lastResponseData = data;
+            
+            // Populate Filters
+            populateFilters(data);
+            
+            // Render via Filter Engine
+            applyFilters();
 
             document.getElementById('st-tot').innerText = data.shipped.length + data.no_tracking.length + data.not_found.length;
-            document.getElementById('st-ok').innerText = data.shipped.length; document.getElementById('tOk').innerText = data.shipped.length;
-            document.getElementById('st-warn').innerText = data.no_tracking.length; document.getElementById('tWarn').innerText = data.no_tracking.length;
-            document.getElementById('st-err').innerText = data.not_found.length; document.getElementById('tErr').innerText = data.not_found.length;
+            document.getElementById('st-ok').innerText = data.shipped.length; 
+            document.getElementById('st-warn').innerText = data.no_tracking.length; 
+            document.getElementById('st-err').innerText = data.not_found.length; 
 
             setTimeout(() => {
                 document.getElementById('loader-wrap').style.display = 'none';
