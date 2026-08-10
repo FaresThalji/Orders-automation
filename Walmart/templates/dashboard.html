@@ -226,6 +226,7 @@
         .walmart-only { display: none; }
         body[data-portal="walmart"] .walmart-only { display: block; }
         .auto-logs { margin-top: 16px; padding: 16px; background: var(--input-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); height: 160px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; display: none; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02); }
+        .cookie-status-badge { font-size: 11px; font-weight: 700; color: var(--ok); display: inline-flex; align-items: center; gap: 6px; }
 
         @media (prefers-reduced-motion: reduce) {
             * { animation: none !important; transition-duration: 0.15s !important; }
@@ -327,9 +328,12 @@
             </div>
             
             <div id="auto-wrap" style="display:none; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
-                <p style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color:var(--text-muted); margin-bottom: 12px;">1. Paste Session Cookies (Raw JSON Array or String)</p>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                    <p style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color:var(--text-muted); margin:0;">1. Session Cookies (Auto-Saved to Local Storage)</p>
+                    <span id="cookie-time-badge" class="cookie-status-badge"></span>
+                </div>
                 <div class="editor-wrap" style="margin-bottom: 20px;">
-                    <textarea id="walmart-cookies" class="editor" style="height: 100px;" placeholder="> [ { &quot;name&quot;: &quot;_userSession&quot;, &quot;value&quot;: &quot;...&quot; } ]"></textarea>
+                    <textarea id="walmart-cookies" class="editor" style="height: 100px;" placeholder="> [ { &quot;name&quot;: &quot;_userSession&quot;, &quot;value&quot;: &quot;...&quot; } ]" oninput="saveCookiesLocally()"></textarea>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
@@ -471,13 +475,57 @@
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
-        // --- Smart Global Order Mapping Engine ---
         window.orderMapping = {};
 
-        // --- Init Stagger Animations ---
-        setTimeout(() => {
-            document.querySelectorAll('.stagger-1, .stagger-2, .stagger-3').forEach(el => el.classList.add('stagger-in'));
-        }, 50);
+        // --- Init Stagger Animations & Auto-Load Cookies ---
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(() => {
+                document.querySelectorAll('.stagger-1, .stagger-2, .stagger-3').forEach(el => el.classList.add('stagger-in'));
+            }, 50);
+            loadSavedCookies();
+        });
+
+        // --- Persistent Cookie Storage Engine ---
+        function saveCookiesLocally() {
+            const cookies = document.getElementById('walmart-cookies').value;
+            if (cookies.trim()) {
+                localStorage.setItem('origin_wm_cookies', cookies);
+                const now = new Date();
+                localStorage.setItem('origin_wm_cookie_time', now.toISOString());
+                updateCookieBadge(now);
+            } else {
+                localStorage.removeItem('origin_wm_cookies');
+                localStorage.removeItem('origin_wm_cookie_time');
+                document.getElementById('cookie-time-badge').innerHTML = '';
+            }
+        }
+
+        function loadSavedCookies() {
+            const savedCookies = localStorage.getItem('origin_wm_cookies');
+            const savedTime = localStorage.getItem('origin_wm_cookie_time');
+            if (savedCookies && savedTime) {
+                document.getElementById('walmart-cookies').value = savedCookies;
+                updateCookieBadge(new Date(savedTime));
+            }
+        }
+
+        function updateCookieBadge(savedDate) {
+            const badge = document.getElementById('cookie-time-badge');
+            const diffMs = new Date() - savedDate;
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMins / 60);
+
+            let timeStr = "";
+            if (diffHours > 0) {
+                timeStr = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            } else if (diffMins > 0) {
+                timeStr = `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+            } else {
+                timeStr = "just now";
+            }
+
+            badge.innerHTML = `<i class="bi bi-shield-check"></i> Session Saved (${timeStr})`;
+        }
 
         // --- Theme Engine ---
         function toggleTheme() {
@@ -575,6 +623,8 @@
                 return;
             }
 
+            saveCookiesLocally();
+
             const poLines = poData.split('\n').map(l => l.trim()).filter(Boolean);
             const trkLines = trkData.split('\n').map(l => l.trim()).filter(Boolean);
             
@@ -607,7 +657,13 @@
                     if (data.success) {
                         logs.innerHTML += `<div style="color:var(--ok);">[SUCCESS] PO: ${task.po} &rarr; Tracking: ${task.tracking} attached.</div>`;
                     } else {
-                        logs.innerHTML += `<div style="color:var(--err);">[FAILED] PO: ${task.po} &rarr; ${data.error}</div>`;
+                        let isAuthError = data.error.includes("401") || data.error.includes("403") || data.error.includes("Unauthorized");
+                        if (isAuthError) {
+                            logs.innerHTML += `<div style="color:var(--err); font-weight:bold;">[EXPIRED] Walmart Session Cookies have expired. Please paste fresh cookies from your browser.</div>`;
+                            break;
+                        } else {
+                            logs.innerHTML += `<div style="color:var(--err);">[FAILED] PO: ${task.po} &rarr; ${data.error}</div>`;
+                        }
                     }
                 } catch (err) {
                     logs.innerHTML += `<div style="color:var(--err);">[ERROR] PO: ${task.po} &rarr; Exception occurred.</div>`;
