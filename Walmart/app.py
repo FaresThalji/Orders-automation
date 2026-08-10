@@ -5,9 +5,16 @@ import time
 import os
 import webbrowser
 import threading
+import json
+import re
+import uuid
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+
+# --- FEDEX CONFIGURATION ---
+FEDEX_CLIENT_ID = os.environ.get("FEDEX_CLIENT_ID", "YOUR_FEDEX_CLIENT_ID_HERE")
+FEDEX_CLIENT_SECRET = os.environ.get("FEDEX_CLIENT_SECRET", "YOUR_FEDEX_CLIENT_SECRET_HERE")
 
 async def authenticate_deposco(http_session, company, username, password):
     url = "https://dax.deposco.com/deposco/resources/nonsecure/authenticate"
@@ -24,6 +31,197 @@ async def authenticate_deposco(http_session, company, username, password):
     except Exception as e:
         return None, f"Connection Error: {str(e)}"
 
+# --- FEDEX LIVE TRACKING ENGINE ---
+async def get_fedex_token(http_session, client_id, client_secret):
+    if not client_id or "YOUR_FEDEX" in client_id:
+        return None
+
+    url = "https://apis.fedex.com/oauth/token"
+    payload = f"grant_type=client_credentials&client_id={client_id}&client_secret={client_secret}"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+    try:
+        async with http_session.post(url, data=payload, headers=headers, timeout=10) as res:
+            if res.status == 200:
+                data = await res.json()
+                return data.get("access_token")
+    except Exception:
+        pass
+    return None
+
+async def fetch_fedex_statuses(http_session, tracking_numbers, fedex_token):
+    if not tracking_numbers or not fedex_token:
+        return {}
+
+    url = "https://apis.fedex.com/track/v1/trackingnumbers"
+    headers = {
+        "Authorization": f"Bearer {fedex_token}",
+        "Content-Type": "application/json"
+    }
+
+    status_map = {}
+    chunk_size = 30 
+
+    for i in range(0, len(tracking_numbers), chunk_size):
+        chunk = tracking_numbers[i:i + chunk_size]
+        payload = {
+            "includeDetailedScans": False,
+            "trackingInfo": [{"trackingNumberInfo": {"trackingNumber": trk}} for trk in chunk]
+        }
+
+        try:
+            async with http_session.post(url, json=payload, headers=headers, timeout=10) as res:
+                if res.status == 200:
+                    data = await res.json()
+                    results = data.get("output", {}).get("completeTrackResults", [])
+                    for item in results:
+                        tracks = item.get("trackResults", [])
+                        if tracks:
+                            t_info = tracks[0].get("trackingNumberInfo", {})
+                            t_num = t_info.get("trackingNumber")
+                            desc = tracks[0].get("latestStatusDetail", {}).get("description")
+                            if t_num and desc:
+                                status_map[t_num] = desc.upper()
+        except Exception:
+            pass
+
+    return status_map
+
+# --- WALMART AUTOMATION ENGINE ---
+def parse_cookie_input(cookie_input):
+    """Smart parser that turns raw JSON arrays from browser extensions into valid Cookie strings"""
+    try:
+        cookies = json.loads(cookie_input)
+        if isinstance(cookies, list):
+            return "; ".join([f"{c['name']}={c['value']}" for c in cookies if 'name' in c and 'value' in c])
+    except Exception:
+        pass
+    return cookie_input
+
+async def async_update_walmart_tracking(po_number, tracking_number, session_cookie):
+    url = "https://seller.walmart.com/aurora/v2/auroraOrderService/gql"
+    
+    query = """mutation update_orders_updateOrder($input: [PoUpdateRequest]) {
+      update_orders_updateOrder(poUpdateRequest: $input) {
+         poUpdateResponseStatus {
+          poNumber
+          updateResponsePoLineList {
+            status
+            statusDescription
+            lineIds
+            error
+            errorCode
+            source
+            trackingValidations {
+              field
+              value
+              errorMessage
+            }
+          }
+          errorList
+        }
+      }
+    }"""
+    
+    variables = {
+        "input": [{
+            "poNumber": str(po_number).strip(),
+            "isWCPOrder": False,
+            "poLineRequestDTOList": [{
+                "lineIds": ["1"],
+                "primeLineNo": [1],
+                "updatedQuantity": "1",
+                "updatedStatus": "Shipped",
+                "shipmentInfo": {
+                    "carrierServiceCode": "FDX-ST",
+                    "trackingNo": str(tracking_number).strip()
+                },
+                "intentToCancelOverride": False
+            }]
+        }]
+    }
+
+    payload = {"query": query, "variables": variables}
+    
+    # Extract XSRF token for Walmart's API firewall
+    xsrf_match = re.search(r'XSRF-TOKEN=([^;]+)', session_cookie)
+    xsrf_token = xsrf_match.group(1) if xsrf_match else ""
+
+    # Exact Header payload captured from production
+    headers = {
+        "accept": "application/json",
+        "accept-language": "en-US,en;q=0.9",
+        "content-type": "application/json",
+        "cookie": session_cookie,
+        "origin": "https://seller.walmart.com",
+        "pxqueryname": "update_orders_updateOrder,update_orders_updateOrder",
+        "referer": f"https://seller.walmart.com/orders/manage-orders?orderGroups=Unshipped&limit=200&poNumber={po_number}",
+        "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+        "wm_aurora.locale": "en-US",
+        "wm_aurora.market": "US",
+        "wm_svc.name": "API",
+        "wm_qos.correlation_id": str(uuid.uuid4())
+    }
+
+    if xsrf_token:
+        headers["x-xsrf-token"] = xsrf_token
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=payload, headers=headers, timeout=15) as response:
+                if response.status != 200:
+                    return {"success": False, "error": f"HTTP {response.status}"}
+                
+                response_data = await response.json()
+                
+                # Check Walmart's specific GraphQL error structures
+                if "errors" in response_data:
+                    return {"success": False, "error": str(response_data["errors"])}
+                    
+                # Dig into the deeply nested response payload to check for logical errors
+                try:
+                    update_response = response_data["data"]["update_orders_updateOrder"]["poUpdateResponseStatus"]
+                    error_list = update_response.get("errorList")
+                    
+                    if error_list:
+                        return {"success": False, "error": str(error_list)}
+                        
+                    lines = update_response.get("updateResponsePoLineList", [])
+                    for line in lines:
+                        if line.get("error"):
+                            return {"success": False, "error": line.get("statusDescription") or "Line Error"}
+                except Exception:
+                    pass # If the structure changes, fall through to success
+                    
+                return {"success": True, "po_number": po_number, "tracking": tracking_number}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.route('/api/update-walmart', methods=['POST'])
+async def update_walmart_order():
+    if "username" not in session: 
+        return jsonify({"success": False, "error": "Not authenticated."}), 401
+
+    data = request.get_json()
+    po_number = data.get('po_number')
+    tracking_number = data.get('tracking_number')
+    raw_cookie = data.get('session_cookie')
+    
+    if not all([po_number, tracking_number, raw_cookie]):
+        return jsonify({"success": False, "error": "Missing required data"}), 400
+        
+    session_cookie = parse_cookie_input(raw_cookie)
+    result = await async_update_walmart_tracking(po_number, tracking_number, session_cookie)
+    
+    return jsonify(result), 200
+
+# --- DEPOSCO VIEW PAYLOAD ---
 def get_view_payload(po_number):
     return {
         "view": {
@@ -91,7 +289,8 @@ async def fetch_order(http_session, po_number, token, semaphore):
                             "created_date": created_date, 
                             "category": "SHIPPED", 
                             "status": status, 
-                            "tracking": final_trk
+                            "tracking": final_trk,
+                            "raw_trackings": t_nums or ([fallback_track.strip()] if fallback_track else [])
                         })
                     else:
                         out_results.append({
@@ -102,7 +301,8 @@ async def fetch_order(http_session, po_number, token, semaphore):
                             "created_date": created_date, 
                             "category": "NO_TRACKING", 
                             "status": status, 
-                            "reason": "No tracking info found"
+                            "reason": "No tracking info found",
+                            "raw_trackings": []
                         })
                         
                 return out_results
@@ -115,22 +315,43 @@ CONCURRENCY = 30
 async def process_batch(company, username, password, order_numbers):
     semaphore = asyncio.Semaphore(CONCURRENCY)
     async with aiohttp.ClientSession() as http_session:
-        token, auth_msg = await authenticate_deposco(http_session, company, username, password)
-        if not token: return {"error": f"Authentication Failed: {auth_msg}"}
+        deposco_task = authenticate_deposco(http_session, company, username, password)
+        fedex_task = get_fedex_token(http_session, FEDEX_CLIENT_ID, FEDEX_CLIENT_SECRET)
+        
+        token, fedex_token = await asyncio.gather(deposco_task, fedex_task)
+        token_str, auth_msg = token
+        
+        if not token_str:
+            return {"error": f"Authentication Failed: {auth_msg}"}
             
-        tasks = [fetch_order(http_session, order, token, semaphore) for order in order_numbers]
+        tasks = [fetch_order(http_session, order, token_str, semaphore) for order in order_numbers]
         results = await asyncio.gather(*tasks)
         
         flat_results = []
         for sublist in results: flat_results.extend(sublist)
-        
+
         shipped = [r for r in flat_results if r["category"] == "SHIPPED"]
         no_tracking = [r for r in flat_results if r["category"] == "NO_TRACKING"]
         not_found = [r for r in flat_results if r["category"] == "NOT_FOUND"]
-        
+
+        if fedex_token and shipped:
+            all_tracking_numbers = []
+            for item in shipped:
+                all_tracking_numbers.extend(item.get("raw_trackings", []))
+
+            unique_trackings = list(set(all_tracking_numbers))
+            
+            if unique_trackings:
+                live_statuses = await fetch_fedex_statuses(http_session, unique_trackings, fedex_token)
+                for item in shipped:
+                    item_trackings = item.get("raw_trackings", [])
+                    matched_statuses = [live_statuses.get(trk) for trk in item_trackings if live_statuses.get(trk)]
+                    if matched_statuses:
+                        item["status"] = " | ".join(set(matched_statuses))
+
         return {"shipped": shipped, "no_tracking": no_tracking, "not_found": not_found}
 
-# --- Routing ---
+# --- ROUTING ---
 @app.route("/")
 def index():
     if "username" in session: return redirect(url_for("dashboard"))
