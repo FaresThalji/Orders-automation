@@ -356,6 +356,13 @@
                 </button>
                 
                 <div id="auto-logs" class="auto-logs"></div>
+
+                <!-- UNUSED TRACKINGS LIST -->
+                <div id="unused-trackings-wrap" style="display:none; margin-top: 16px; padding: 12px; background: var(--warn-soft); border: 1px solid var(--warn-line); border-radius: var(--radius-sm);">
+                    <p style="font-size: 12px; font-weight: 700; color: var(--warn); margin-bottom: 8px; margin-top:0;"><i class="bi bi-exclamation-triangle"></i> Unused Trackings (Manual Message Required)</p>
+                    <textarea id="unused-trackings-log" class="editor" style="height: 100px; background: transparent; border: none; color: var(--text-main); resize: vertical; padding: 0;" readonly></textarea>
+                </div>
+
             </div>
         </div>
 
@@ -617,6 +624,8 @@
             const poData = document.getElementById('walmart-auto-po').value.trim();
             const trkData = document.getElementById('walmart-auto-tracking').value.trim();
             const logs = document.getElementById('auto-logs');
+            const unusedBox = document.getElementById('unused-trackings-wrap');
+            const unusedLog = document.getElementById('unused-trackings-log');
             
             if (!cookieData || !poData || !trkData) {
                 alert("Please provide Session Cookies, PO Numbers, and Tracking Numbers.");
@@ -624,12 +633,16 @@
             }
 
             saveCookiesLocally();
+            
+            // Clear previous unused logs
+            unusedBox.style.display = 'none';
+            unusedLog.value = '';
 
             const poLines = poData.split('\n').map(l => l.trim()).filter(Boolean);
             const trkLines = trkData.split('\n').map(l => l.trim()).filter(Boolean);
             
             if (poLines.length !== trkLines.length) {
-                alert(`Mismatch! You provided ${poLines.length} PO Numbers but ${trkLines.length} Tracking Numbers. They must line up exactly.`);
+                alert(`Mismatch! You provided ${poLines.length} PO Numbers but ${trkLines.length} Tracking lines. They must line up exactly.`);
                 return;
             }
 
@@ -655,7 +668,14 @@
                     
                     const data = await res.json();
                     if (data.success) {
-                        logs.innerHTML += `<div style="color:var(--ok);">[SUCCESS] PO: ${task.po} &rarr; Tracking: ${task.tracking} attached.</div>`;
+                        logs.innerHTML += `<div style="color:var(--ok);">[SUCCESS] PO: ${task.po} &rarr; Tracking attached successfully.</div>`;
+                        
+                        // Handle unapplied tracking numbers pushed to the manual queue
+                        if (data.unused_trackings && data.unused_trackings.length > 0) {
+                            logs.innerHTML += `<div style="color:var(--warn);">[WARN] PO: ${task.po} &rarr; Extra tracking numbers pushed to manual list.</div>`;
+                            unusedBox.style.display = 'block';
+                            unusedLog.value += `${task.po}\t${data.unused_trackings.join(', ')}\n`;
+                        }
                     } else {
                         let isAuthError = data.error.includes("401") || data.error.includes("403") || data.error.includes("Unauthorized");
                         if (isAuthError) {
