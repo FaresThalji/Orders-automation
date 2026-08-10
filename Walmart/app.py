@@ -89,7 +89,6 @@ async def fetch_fedex_statuses(http_session, tracking_numbers, fedex_token):
 
 # --- WALMART AUTOMATION ENGINE ---
 def parse_cookie_input(cookie_input):
-    """Smart parser that turns raw JSON arrays from browser extensions into valid Cookie strings"""
     try:
         cookies = json.loads(cookie_input)
         if isinstance(cookies, list):
@@ -98,63 +97,23 @@ def parse_cookie_input(cookie_input):
         pass
     return cookie_input
 
-async def async_update_walmart_tracking(po_number, tracking_number, session_cookie):
+async def async_update_walmart_tracking(po_number, tracking_number_str, session_cookie):
     url = "https://seller.walmart.com/aurora/v2/auroraOrderService/gql"
     
-    query = """mutation update_orders_updateOrder($input: [PoUpdateRequest]) {
-      update_orders_updateOrder(poUpdateRequest: $input) {
-         poUpdateResponseStatus {
-          poNumber
-          updateResponsePoLineList {
-            status
-            statusDescription
-            lineIds
-            error
-            errorCode
-            source
-            trackingValidations {
-              field
-              value
-              errorMessage
-            }
-          }
-          errorList
-        }
-      }
-    }"""
-    
-    variables = {
-        "input": [{
-            "poNumber": str(po_number).strip(),
-            "isWCPOrder": False,
-            "poLineRequestDTOList": [{
-                "lineIds": ["1"],
-                "primeLineNo": [1],
-                "updatedQuantity": "1",
-                "updatedStatus": "Shipped",
-                "shipmentInfo": {
-                    "carrierServiceCode": "FDX-ST",
-                    "trackingNo": str(tracking_number).strip()
-                },
-                "intentToCancelOverride": False
-            }]
-        }]
-    }
+    # Intelligently split tracking numbers (handles commas, tabs, spaces)
+    trackings = [t.strip() for t in re.split(r'[,\s\t]+', str(tracking_number_str)) if t.strip()]
+    if not trackings:
+        return {"success": False, "error": "No valid tracking numbers parsed"}
 
-    payload = {"query": query, "variables": variables}
-    
-    # Extract XSRF token for Walmart's API firewall
     xsrf_match = re.search(r'XSRF-TOKEN=([^;]+)', session_cookie)
     xsrf_token = xsrf_match.group(1) if xsrf_match else ""
 
-    # Exact Header payload captured from production
     headers = {
         "accept": "application/json",
         "accept-language": "en-US,en;q=0.9",
         "content-type": "application/json",
         "cookie": session_cookie,
         "origin": "https://seller.walmart.com",
-        "pxqueryname": "update_orders_updateOrder,update_orders_updateOrder",
         "referer": f"https://seller.walmart.com/orders/manage-orders?orderGroups=Unshipped&limit=200&poNumber={po_number}",
         "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
         "sec-ch-ua-mobile": "?0",
@@ -165,43 +124,110 @@ async def async_update_walmart_tracking(po_number, tracking_number, session_cook
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
         "wm_aurora.locale": "en-US",
         "wm_aurora.market": "US",
-        "wm_svc.name": "API",
-        "wm_qos.correlation_id": str(uuid.uuid4())
+        "wm_svc.name": "API"
     }
 
     if xsrf_token:
         headers["x-xsrf-token"] = xsrf_token
 
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, json=payload, headers=headers, timeout=15) as response:
-                if response.status != 200:
-                    return {"success": False, "error": f"HTTP {response.status}"}
+    async with aiohttp.ClientSession() as session:
+        # STEP 1: Fetch PO details to count lines
+        headers["pxqueryname"] = "get_orders_getAllOrders,get_orders_getAllOrders"
+        headers["wm_qos.correlation_id"] = str(uuid.uuid4())
+        
+        fetch_query = """query get_orders_getAllOrders($params: SearchParams) {
+          get_orders_getAllOrders(searchParams: $params) {
+             orderInfo { purchaseOrders { poLines { lineId primeLineNo quantity } } }
+          }
+        }"""
+        fetch_payload = {"query": fetch_query, "variables": {"params": {"orderGroups": "All", "isDetailPage": True, "poNumber": str(po_number).strip()}}}
+        
+        po_lines = []
+        try:
+            async with session.post(url, json=fetch_payload, headers=headers, timeout=15) as res:
+                if res.status == 200:
+                    data = await res.json()
+                    po_lines = data.get("data", {}).get("get_orders_getAllOrders", {}).get("orderInfo", {}).get("purchaseOrders", [{}])[0].get("poLines", [])
+        except Exception:
+            pass
+
+        # Fallback if fetch fails
+        if not po_lines:
+            po_lines = [{"lineId": ["1"], "primeLineNo": [1], "quantity": 1}]
+
+        # STEP 2: Intelligent Routing Matrix
+        poLineRequestDTOList = []
+        unused_trackings = []
+        num_lines = len(po_lines)
+        num_tracks = len(trackings)
+
+        if num_tracks == 1:
+            # 1 Tracking -> Apply to all SKUs
+            for line in po_lines:
+                poLineRequestDTOList.append({
+                    "lineIds": [str(line.get("lineId", ["1"])[0])],
+                    "primeLineNo": [int(line.get("primeLineNo", [1])[0])],
+                    "updatedQuantity": str(line.get("quantity", "1")),
+                    "updatedStatus": "Shipped",
+                    "intentToCancelOverride": False,
+                    "shipmentInfo": {
+                        "carrierServiceCode": "FDX-ST",
+                        "trackingNo": trackings[0]
+                    }
+                })
+        else:
+            # Multi Tracking -> Map 1:1, collect leftovers
+            for i, line in enumerate(po_lines):
+                trk = trackings[i] if i < num_tracks else trackings[-1]
+                poLineRequestDTOList.append({
+                    "lineIds": [str(line.get("lineId", ["1"])[0])],
+                    "primeLineNo": [int(line.get("primeLineNo", [1])[0])],
+                    "updatedQuantity": str(line.get("quantity", "1")),
+                    "updatedStatus": "Shipped",
+                    "intentToCancelOverride": False,
+                    "shipmentInfo": {
+                        "carrierServiceCode": "FDX-ST",
+                        "trackingNo": trk
+                    }
+                })
+            if num_tracks > num_lines:
+                unused_trackings = trackings[num_lines:]
+
+        # STEP 3: Execute Update
+        headers["pxqueryname"] = "update_orders_updateOrder,update_orders_updateOrder"
+        headers["wm_qos.correlation_id"] = str(uuid.uuid4())
+        
+        update_query = """mutation update_orders_updateOrder($input: [PoUpdateRequest]) {
+          update_orders_updateOrder(poUpdateRequest: $input) {
+             poUpdateResponseStatus {
+              poNumber
+              updateResponsePoLineList { status statusDescription lineIds error }
+              errorList
+            }
+          }
+        }"""
+        update_payload = {"query": update_query, "variables": {"input": [{"poNumber": str(po_number).strip(), "isWCPOrder": False, "poLineRequestDTOList": poLineRequestDTOList}]}}
+
+        try:
+            async with session.post(url, json=update_payload, headers=headers, timeout=15) as res:
+                if res.status != 200:
+                    return {"success": False, "error": f"HTTP {res.status}"}
                 
-                response_data = await response.json()
-                
-                # Check Walmart's specific GraphQL error structures
-                if "errors" in response_data:
-                    return {"success": False, "error": str(response_data["errors"])}
+                update_data = await res.json()
+                if "errors" in update_data:
+                    return {"success": False, "error": str(update_data["errors"])}
                     
-                # Dig into the deeply nested response payload to check for logical errors
                 try:
-                    update_response = response_data["data"]["update_orders_updateOrder"]["poUpdateResponseStatus"]
-                    error_list = update_response.get("errorList")
-                    
-                    if error_list:
-                        return {"success": False, "error": str(error_list)}
-                        
-                    lines = update_response.get("updateResponsePoLineList", [])
-                    for line in lines:
-                        if line.get("error"):
-                            return {"success": False, "error": line.get("statusDescription") or "Line Error"}
+                    resp_status = update_data["data"]["update_orders_updateOrder"]["poUpdateResponseStatus"]
+                    if resp_status.get("errorList"): return {"success": False, "error": str(resp_status["errorList"])}
+                    for l in resp_status.get("updateResponsePoLineList", []):
+                        if l.get("error"): return {"success": False, "error": l.get("statusDescription")}
                 except Exception:
-                    pass # If the structure changes, fall through to success
+                    pass
                     
-                return {"success": True, "po_number": po_number, "tracking": tracking_number}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+                return {"success": True, "po_number": po_number, "tracking": trackings, "unused_trackings": unused_trackings}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
 @app.route('/api/update-walmart', methods=['POST'])
 async def update_walmart_order():
